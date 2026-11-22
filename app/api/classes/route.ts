@@ -49,3 +49,26 @@ export async function POST(request: Request) {
   });
   return NextResponse.json({ class: cls }, { status: 201 });
 }
+
+// حذف فصل من مدرسة المستخدم. حصص الجدول تُحذف معه، والطلاب يبقون بلا فصل.
+export async function DELETE(request: Request) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: "غير مصرّح" }, { status: 401 });
+  if (!hasPermission(user, "students:manage")) {
+    return NextResponse.json({ error: "ليست لديك صلاحية" }, { status: 403 });
+  }
+
+  const id = new URL(request.url).searchParams.get("id") ?? "";
+  if (!id) return NextResponse.json({ error: "معرّف الفصل مطلوب" }, { status: 400 });
+
+  const cls = await prisma.schoolClass.findUnique({ where: { id } });
+  if (!cls || cls.schoolId !== user.schoolId) {
+    return NextResponse.json({ error: "الفصل غير موجود" }, { status: 404 });
+  }
+
+  await prisma.schoolClass.delete({ where: { id } });
+  await prisma.auditLog.create({
+    data: { schoolId: user.schoolId, actorId: user.id, action: "class_deleted", entity: "SchoolClass", entityId: id },
+  });
+  return NextResponse.json({ ok: true });
+}
