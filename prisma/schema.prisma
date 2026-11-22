@@ -39,6 +39,8 @@ model User {
   role               Role
   isActive           Boolean   @default(true)
   mustChangePassword Boolean   @default(false)
+  phone              String?
+  specialty          String?
   createdAt          DateTime  @default(now())
   lastLoginAt        DateTime?
 
@@ -81,6 +83,8 @@ model Student {
   fullName    String
   nationalRef String? // مرجع داخلي اختياري، لا يُخزَّن رقم الهوية الوطنية
   guardianId  String? // ولي الأمر (مستخدم بدور GUARDIAN)
+  guardianName  String?
+  guardianPhone String?
   isActive    Boolean          @default(true)
   createdAt   DateTime         @default(now())
   attendance  Attendance[]
