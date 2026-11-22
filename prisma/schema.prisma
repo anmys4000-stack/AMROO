@@ -1,0 +1,56 @@
+// المرحلة الأولى: المدارس والمستخدمون والأدوار.
+// مبدأ عام: كل سجل تابع لمدرسة (schoolId) لعزل بيانات كل مدرسة عن غيرها.
+// البيانات الشخصية محدودة بما يلزم فقط (تقليل البيانات)، ولا تُخزَّن كلمات المرور إلا مُجزّأة.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PRINCIPAL        // مدير المدرسة
+  STUDENT_AFFAIRS  // وكيل شؤون الطلاب
+  GUIDANCE         // الموجّه الطلابي
+  ACADEMIC_DEPUTY  // وكيل الشؤون التعليمية
+  TEACHER          // المعلم
+  GUARDIAN         // ولي الأمر
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  schoolId     String
+  school       School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email        String    @unique
+  fullName     String
+  passwordHash String
+  role         Role
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  @@index([schoolId])
+}
+
+// سجل التدقيق: من فعل ماذا ومتى، لحماية البيانات الشخصية وتتبّع الوصول.
+model AuditLog {
+  id        String   @id @default(cuid())
+  schoolId  String
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime @default(now())
+
+  @@index([schoolId, createdAt])
+}
