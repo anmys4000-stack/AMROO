@@ -1,0 +1,24 @@
+# إعداد Render: خدمة الويب وقاعدة PostgreSQL تُنشآن معًا من Blueprint.
+# الأسرار (DATABASE_URL و SESSION_SECRET) تُدار داخل Render ولا تُكتب هنا.
+services:
+  - type: web
+    name: amroo
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npx prisma generate && npx next build
+    # db push يطابق المخطط مع قاعدة البيانات. عند إضافة ملفات الهجرة لاحقًا نستبدله بـ migrate deploy.
+    startCommand: npx prisma db push --skip-generate && npx next start -p $PORT
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: amroo-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+
+databases:
+  - name: amroo-db
+    plan: free
