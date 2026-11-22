@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     classId
       ? prisma.timetableEntry.findMany({
           where: { schoolId: user.schoolId, classId },
-          select: { id: true, weekday: true, period: true, subject: true, teacherId: true },
+          select: { id: true, weekday: true, period: true, subject: true, teacherId: true, teacherName: true },
         })
       : Promise.resolve([]),
   ]);
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "ليست لديك صلاحية" }, { status: 403 });
   }
 
-  let body: { classId?: unknown; weekday?: unknown; period?: unknown; subject?: unknown; teacherId?: unknown };
+  let body: { classId?: unknown; weekday?: unknown; period?: unknown; subject?: unknown; teacherId?: unknown; teacherName?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -55,6 +55,10 @@ export async function POST(request: Request) {
   const period = Number(body.period);
   const subject = typeof body.subject === "string" ? body.subject.trim() : "";
   const teacherId = typeof body.teacherId === "string" && body.teacherId ? body.teacherId : null;
+  const teacherName =
+    !teacherId && typeof body.teacherName === "string" && body.teacherName.trim()
+      ? body.teacherName.trim().slice(0, 80)
+      : null;
 
   if (!classId || !Number.isInteger(weekday) || weekday < 1 || weekday > 5) {
     return NextResponse.json({ error: "اليوم غير صالح" }, { status: 400 });
@@ -86,8 +90,8 @@ export async function POST(request: Request) {
 
   const entry = await prisma.timetableEntry.upsert({
     where: { classId_weekday_period: { classId, weekday, period } },
-    create: { schoolId: user.schoolId, classId, weekday, period, subject, teacherId },
-    update: { subject, teacherId },
+    create: { schoolId: user.schoolId, classId, weekday, period, subject, teacherId, teacherName },
+    update: { subject, teacherId, teacherName },
     select: { id: true },
   });
   return NextResponse.json({ ok: true, id: entry.id });

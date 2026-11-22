@@ -75,20 +75,20 @@ model SchoolClass {
 }
 
 model Student {
-  id          String           @id @default(cuid())
-  schoolId    String
-  school      School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  classId     String?
-  schoolClass SchoolClass?     @relation(fields: [classId], references: [id], onDelete: SetNull)
-  fullName    String
-  nationalRef String? // مرجع داخلي اختياري، لا يُخزَّن رقم الهوية الوطنية
-  guardianId  String? // ولي الأمر (مستخدم بدور GUARDIAN)
+  id            String           @id @default(cuid())
+  schoolId      String
+  school        School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId       String?
+  schoolClass   SchoolClass?     @relation(fields: [classId], references: [id], onDelete: SetNull)
+  fullName      String
+  nationalRef   String? // مرجع داخلي اختياري، لا يُخزَّن رقم الهوية الوطنية
+  guardianId    String? // ولي الأمر (مستخدم بدور GUARDIAN)
   guardianName  String?
   guardianPhone String?
-  isActive    Boolean          @default(true)
-  createdAt   DateTime         @default(now())
-  attendance  Attendance[]
-  behaviors   BehaviorRecord[]
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  attendance    Attendance[]
+  behaviors     BehaviorRecord[]
 
   @@index([schoolId])
 }
@@ -133,6 +133,7 @@ model TimetableEntry {
   classId     String
   schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
   teacherId   String? // مستخدم بدور TEACHER
+  teacherName String? // اسم المعلم عندما لا يملك حسابًا بعد
   subject     String
   weekday     Int // 1 = الأحد ... 5 = الخميس
   period      Int // رقم الحصة
