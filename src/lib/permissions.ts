@@ -9,6 +9,9 @@ export type Role =
 
 export type Permission =
   | "users:manage"
+  | "students:manage"
+  | "students:view"
+  | "attendance:record"
   | "timetable:manage"
   | "behavior:record"
   | "referrals:handle"
@@ -16,11 +19,20 @@ export type Permission =
   | "guardian:view_own_child";
 
 const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
-  PRINCIPAL: ["users:manage", "timetable:manage", "behavior:record", "referrals:handle", "visits:approve"],
-  STUDENT_AFFAIRS: ["behavior:record"],
-  GUIDANCE: ["referrals:handle"],
-  ACADEMIC_DEPUTY: ["timetable:manage", "visits:approve"],
-  TEACHER: ["behavior:record"],
+  PRINCIPAL: [
+    "users:manage",
+    "students:manage",
+    "students:view",
+    "attendance:record",
+    "timetable:manage",
+    "behavior:record",
+    "referrals:handle",
+    "visits:approve",
+  ],
+  STUDENT_AFFAIRS: ["students:manage", "students:view", "attendance:record", "behavior:record"],
+  GUIDANCE: ["students:view", "referrals:handle"],
+  ACADEMIC_DEPUTY: ["students:view", "timetable:manage", "visits:approve"],
+  TEACHER: ["students:view", "attendance:record", "behavior:record"],
   GUARDIAN: ["guardian:view_own_child"],
 };
 
