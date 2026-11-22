@@ -36,6 +36,7 @@ await prisma.user.create({
     fullName: "مدير تجريبي",
     passwordHash,
     role: "PRINCIPAL",
+    mustChangePassword: true,
   },
 });
 

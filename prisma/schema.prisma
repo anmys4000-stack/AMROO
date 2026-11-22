@@ -36,6 +36,7 @@ model User {
   passwordHash String
   role         Role
   isActive     Boolean   @default(true)
+  mustChangePassword Boolean @default(false)
   createdAt    DateTime  @default(now())
   lastLoginAt  DateTime?
 
