@@ -12,33 +12,35 @@ datasource db {
 }
 
 enum Role {
-  PRINCIPAL        // مدير المدرسة
-  STUDENT_AFFAIRS  // وكيل شؤون الطلاب
-  GUIDANCE         // الموجّه الطلابي
-  ACADEMIC_DEPUTY  // وكيل الشؤون التعليمية
-  TEACHER          // المعلم
-  GUARDIAN         // ولي الأمر
+  PRINCIPAL // مدير المدرسة
+  STUDENT_AFFAIRS // وكيل شؤون الطلاب
+  GUIDANCE // الموجّه الطلابي
+  ACADEMIC_DEPUTY // وكيل الشؤون التعليمية
+  TEACHER // المعلم
+  GUARDIAN // ولي الأمر
 }
 
 model School {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
   users     User[]
+  classes   SchoolClass[]
+  students  Student[]
 }
 
 model User {
-  id           String    @id @default(cuid())
-  schoolId     String
-  school       School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  email        String    @unique
-  fullName     String
-  passwordHash String
-  role         Role
-  isActive     Boolean   @default(true)
-  mustChangePassword Boolean @default(false)
-  createdAt    DateTime  @default(now())
-  lastLoginAt  DateTime?
+  id                 String    @id @default(cuid())
+  schoolId           String
+  school             School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email              String    @unique
+  fullName           String
+  passwordHash       String
+  role               Role
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  lastLoginAt        DateTime?
 
   @@index([schoolId])
 }
@@ -54,4 +56,83 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([schoolId, createdAt])
+}
+
+// المرحلة الثانية: الفصول والطلاب والمواظبة والسلوك والجدول.
+// كل جدول يحمل schoolId لعزل البيانات. بيانات الطالب محدودة بما يلزم فقط.
+
+model SchoolClass {
+  id       String           @id @default(cuid())
+  schoolId String
+  school   School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name     String // مثال: أول ثانوي / 1
+  students Student[]
+  periods  TimetableEntry[]
+
+  @@unique([schoolId, name])
+}
+
+model Student {
+  id          String           @id @default(cuid())
+  schoolId    String
+  school      School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classId     String?
+  schoolClass SchoolClass?     @relation(fields: [classId], references: [id], onDelete: SetNull)
+  fullName    String
+  nationalRef String? // مرجع داخلي اختياري، لا يُخزَّن رقم الهوية الوطنية
+  guardianId  String? // ولي الأمر (مستخدم بدور GUARDIAN)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  attendance  Attendance[]
+  behaviors   BehaviorRecord[]
+
+  @@index([schoolId])
+}
+
+model Attendance {
+  id         String           @id @default(cuid())
+  schoolId   String
+  studentId  String
+  student    Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date       DateTime         @db.Date
+  status     AttendanceStatus
+  recordedBy String?
+  createdAt  DateTime         @default(now())
+
+  @@unique([studentId, date])
+  @@index([schoolId, date])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+model BehaviorRecord {
+  id          String   @id @default(cuid())
+  schoolId    String
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  category    String // مخالفة / سلوك إيجابي / إجراء تربوي
+  description String
+  recordedBy  String?
+  createdAt   DateTime @default(now())
+
+  @@index([schoolId, studentId])
+}
+
+model TimetableEntry {
+  id          String      @id @default(cuid())
+  schoolId    String
+  classId     String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacherId   String? // مستخدم بدور TEACHER
+  subject     String
+  weekday     Int // 1 = الأحد ... 5 = الخميس
+  period      Int // رقم الحصة
+
+  @@unique([classId, weekday, period])
+  @@index([schoolId])
 }
