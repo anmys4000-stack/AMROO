@@ -12,13 +12,17 @@ export async function GET() {
     return NextResponse.json({ error: "ليست لديك صلاحية" }, { status: 403 });
   }
 
-  const students = await prisma.student.findMany({
-    where: { schoolId: user.schoolId, isActive: true },
-    select: { id: true, fullName: true, classId: true },
-    orderBy: { fullName: "asc" },
-    take: 500,
-  });
-  return NextResponse.json({ students });
+  const where = { schoolId: user.schoolId, isActive: true };
+  const [students, total] = await Promise.all([
+    prisma.student.findMany({
+      where,
+      select: { id: true, fullName: true, classId: true },
+      orderBy: { fullName: "asc" },
+      take: 500,
+    }),
+    prisma.student.count({ where }),
+  ]);
+  return NextResponse.json({ students, total });
 }
 
 // إضافة طالب إلى مدرسة المستخدم فقط.

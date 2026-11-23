@@ -23,6 +23,7 @@ export default function StudentsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [date, setDate] = useState(today());
+  const [total, setTotal] = useState<number | null>(null);
 
   async function load() {
     setLoading(true);
@@ -34,6 +35,7 @@ export default function StudentsPage() {
         return;
       }
       setStudents(data?.students ?? []);
+      setTotal((data as { total?: number } | null)?.total ?? null);
       setError(null);
     } catch {
       setError("تعذّر الاتصال بالخادم");
@@ -84,6 +86,7 @@ export default function StudentsPage() {
   return (
     <main className="page">
       <h1>الطلاب والمواظبة</h1>
+      {total !== null && <p>إجمالي الطلاب: {total}</p>}
 
       <form className="card" onSubmit={addStudent}>
         <label htmlFor="name">إضافة طالب</label>

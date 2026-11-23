@@ -15,10 +15,40 @@ export default async function HomePage() {
   if (!user || !user.isActive) redirect("/login");
   if (user.mustChangePassword) redirect("/account/password");
 
+  const schoolId = user.schoolId;
+  const [students, classes, teachers, guardians, presentToday] = await Promise.all([
+    prisma.student.count({ where: { schoolId, isActive: true } }),
+    prisma.schoolClass.count({ where: { schoolId } }),
+    prisma.user.count({ where: { schoolId, role: "TEACHER", isActive: true } }),
+    prisma.student.count({ where: { schoolId, isActive: true, guardianId: { not: null } } }),
+    prisma.attendance.count({
+      where: { schoolId, date: new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z"), status: "PRESENT" },
+    }),
+  ]);
+
+  const cards = [
+    { label: "الطلاب", value: students },
+    { label: "الفصول", value: classes },
+    { label: "المعلمون", value: teachers },
+    { label: "أولياء الأمور المسجلون", value: guardians },
+    { label: "الحضور اليوم", value: presentToday },
+  ];
+
   return (
-    <main style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
-      <h1>مرحبًا بك في AMROO</h1>
-      <p>تم تسجيل دخولك. لوحة التحكم ستُبنى في المرحلة التالية.</p>
+    <main className="page">
+      <h1>لوحة التحكم</h1>
+      <section className="grid">
+        {cards.map((c) => (
+          <div key={c.label} className="card">
+            <p>{c.label}</p>
+            <strong>{c.value}</strong>
+          </div>
+        ))}
+      </section>
+      <nav className="card">
+        <a href="/students">الطلاب والمواظبة</a> · <a href="/timetable">الجدول الدراسي</a> ·{" "}
+        <a href="/behavior">السلوك</a> · <a href="/import">استيراد البيانات</a>
+      </nav>
     </main>
   );
 }
