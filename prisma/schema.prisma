@@ -30,18 +30,19 @@ model School {
 }
 
 model User {
-  id                 String    @id @default(cuid())
+  id                 String         @id @default(cuid())
   schoolId           String
-  school             School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  email              String    @unique
+  school             School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email              String         @unique
+  leaves             LeaveRequest[]
   fullName           String
   passwordHash       String
   role               Role
-  isActive           Boolean   @default(true)
-  mustChangePassword Boolean   @default(false)
+  isActive           Boolean        @default(true)
+  mustChangePassword Boolean        @default(false)
   phone              String?
   specialty          String?
-  createdAt          DateTime  @default(now())
+  createdAt          DateTime       @default(now())
   lastLoginAt        DateTime?
 
   @@index([schoolId])
@@ -92,6 +93,7 @@ model Student {
   excuses       Excuse[]
   messages      Message[]
   referrals     Referral[]
+  leaves        LeaveRequest[]
 
   @@index([schoolId])
 }
@@ -198,4 +200,29 @@ model Referral {
 enum ReferralStatus {
   OPEN
   CLOSED
+}
+
+// طلب استئذان معلم: يوم وساعة الخروج والعودة، ويُعتمد أو يُرفض، ويُسجَّل تأمين حصصه.
+model LeaveRequest {
+  id        String      @id @default(cuid())
+  schoolId  String
+  teacherId String
+  teacher   User        @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  date      DateTime    @db.Date
+  leaveAt   String
+  returnAt  String
+  reason    String
+  coverage  String?
+  status    LeaveStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  student   Student?    @relation(fields: [studentId], references: [id])
+  studentId String?
+
+  @@index([schoolId, date])
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
