@@ -241,3 +241,20 @@ model DutyAssignment {
   @@unique([teacherId, date, kind])
   @@index([schoolId, date])
 }
+
+// تكليف معلم بحصة انتظار لفصل في يوم وحصة محددة، بدلًا من معلم غائب.
+model Substitution {
+  id           String   @id @default(cuid())
+  schoolId     String
+  date         DateTime @db.Date
+  weekday      Int
+  period       Int
+  classId      String
+  subject      String
+  absentName   String
+  substituteId String
+  createdAt    DateTime @default(now())
+
+  @@unique([classId, date, period])
+  @@index([schoolId, date])
+}
