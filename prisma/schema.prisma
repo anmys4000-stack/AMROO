@@ -30,19 +30,20 @@ model School {
 }
 
 model User {
-  id                 String         @id @default(cuid())
+  id                 String           @id @default(cuid())
   schoolId           String
-  school             School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  email              String         @unique
+  school             School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email              String           @unique
   leaves             LeaveRequest[]
+  duties             DutyAssignment[]
   fullName           String
   passwordHash       String
   role               Role
-  isActive           Boolean        @default(true)
-  mustChangePassword Boolean        @default(false)
+  isActive           Boolean          @default(true)
+  mustChangePassword Boolean          @default(false)
   phone              String?
   specialty          String?
-  createdAt          DateTime       @default(now())
+  createdAt          DateTime         @default(now())
   lastLoginAt        DateTime?
 
   @@index([schoolId])
@@ -225,4 +226,18 @@ enum LeaveStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// تعيين معلم للإشراف على الفسحة أو المناوبة في يوم محدد.
+model DutyAssignment {
+  id        String   @id @default(cuid())
+  schoolId  String
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  kind      String // "BREAK" للإشراف على الفسحة أو "DUTY" للمناوبة
+  createdAt DateTime @default(now())
+
+  @@unique([teacherId, date, kind])
+  @@index([schoolId, date])
 }
