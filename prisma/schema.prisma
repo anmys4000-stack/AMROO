@@ -30,23 +30,24 @@ model School {
 }
 
 model User {
-  id                 String             @id @default(cuid())
+  id                 String                @id @default(cuid())
   schoolId           String
-  school             School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  email              String             @unique
+  school             School                @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email              String                @unique
   leaves             LeaveRequest[]
   duties             DutyAssignment[]
   circularReads      CircularRead[]
   invigilations      ExamInvigilation[]
   weeklyPlans        WeeklyPlan[]
+  committeeMembers   ExamCommitteeMember[]
   fullName           String
   passwordHash       String
   role               Role
-  isActive           Boolean            @default(true)
-  mustChangePassword Boolean            @default(false)
+  isActive           Boolean               @default(true)
+  mustChangePassword Boolean               @default(false)
   phone              String?
   specialty          String?
-  createdAt          DateTime           @default(now())
+  createdAt          DateTime              @default(now())
   lastLoginAt        DateTime?
 
   @@index([schoolId])
@@ -345,4 +346,26 @@ model WeeklyPlan {
 
   @@unique([teacherId, weekStart])
   @@index([schoolId, weekStart])
+}
+
+// لجنة اختبار: مثل لجنة الاختبارات أو لجنة المحضر، ولها أعضاء من المعلمين.
+model ExamCommittee {
+  id        String                @id @default(cuid())
+  schoolId  String
+  name      String
+  createdAt DateTime              @default(now())
+  members   ExamCommitteeMember[]
+
+  @@index([schoolId])
+}
+
+model ExamCommitteeMember {
+  id          String        @id @default(cuid())
+  committeeId String
+  committee   ExamCommittee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     User          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  role        String // "رئيس" أو "عضو" أو "مراقب"
+
+  @@unique([committeeId, teacherId])
 }
