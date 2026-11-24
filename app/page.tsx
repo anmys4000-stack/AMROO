@@ -15,6 +15,45 @@ export default async function HomePage() {
   if (!user || !user.isActive) redirect("/login");
   if (user.mustChangePassword) redirect("/account/password");
 
+  // المعلم يرى جدوله الشخصي: الحصص المرتبطة بحسابه، أو بتطابق اسمه المكتوب في الجدول.
+  if (user.role === "TEACHER") {
+    const lessons = await prisma.timetableEntry.findMany({
+      where: {
+        schoolId: user.schoolId,
+        OR: [{ teacherId: user.id }, { teacherName: user.fullName }],
+      },
+      select: { weekday: true, period: true, subject: true, schoolClass: { select: { name: true } } },
+      orderBy: [{ weekday: "asc" }, { period: "asc" }],
+    });
+    const days = ["", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
+
+    return (
+      <main className="page">
+        <h1>مرحبًا {user.fullName}</h1>
+        <p>جدولك الأسبوعي: {lessons.length} حصة</p>
+        {lessons.length === 0 ? (
+          <p>لا توجد حصص مرتبطة بحسابك بعد. اطلب من الإدارة ربط جدولك.</p>
+        ) : (
+          <ul className="list">
+            {lessons.map((l) => (
+              <li key={`${l.weekday}-${l.period}-${l.schoolClass.name}`} className="card row">
+                <span>
+                  {days[l.weekday]} · الحصة {l.period}
+                </span>
+                <span>
+                  {l.subject} · {l.schoolClass.name}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <nav className="card">
+          <a href="/students">تسجيل الحضور والمواظبة</a> · <a href="/behavior">السلوك</a>
+        </nav>
+      </main>
+    );
+  }
+
   const schoolId = user.schoolId;
   const [students, classes, teachers, guardians, presentToday] = await Promise.all([
     prisma.student.count({ where: { schoolId, isActive: true } }),
