@@ -101,7 +101,7 @@ model Student {
   messages      Message[]
   referrals     Referral[]
   learningCases LearningCase[]
-  leaves        LeaveRequest[]
+  leaveRequests LeaveRequest[]
 
   @@index([schoolId])
 }
@@ -384,4 +384,18 @@ model LearningCase {
   createdAt   DateTime @default(now())
 
   @@index([schoolId, kind])
+}
+
+// تسجيل أن حصة فصل في يوم معيّن قد حُضِّرت، ومن حضّرها.
+model PeriodCheck {
+  id         String   @id @default(cuid())
+  schoolId   String
+  classId    String
+  date       DateTime @db.Date
+  period     Int
+  recordedBy String
+  createdAt  DateTime @default(now())
+
+  @@unique([classId, date, period])
+  @@index([schoolId, date])
 }
