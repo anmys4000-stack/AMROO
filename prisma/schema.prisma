@@ -30,21 +30,22 @@ model School {
 }
 
 model User {
-  id                 String           @id @default(cuid())
+  id                 String             @id @default(cuid())
   schoolId           String
-  school             School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  email              String           @unique
+  school             School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  email              String             @unique
   leaves             LeaveRequest[]
   duties             DutyAssignment[]
   circularReads      CircularRead[]
+  invigilations      ExamInvigilation[]
   fullName           String
   passwordHash       String
   role               Role
-  isActive           Boolean          @default(true)
-  mustChangePassword Boolean          @default(false)
+  isActive           Boolean            @default(true)
+  mustChangePassword Boolean            @default(false)
   phone              String?
   specialty          String?
-  createdAt          DateTime         @default(now())
+  createdAt          DateTime           @default(now())
   lastLoginAt        DateTime?
 
   @@index([schoolId])
@@ -299,5 +300,20 @@ model ExamSlot {
   createdAt   DateTime    @default(now())
 
   @@unique([classId, date, period])
+  @@index([schoolId, date])
+}
+
+// تعيين معلم ملاحظًا لقاعة في يوم اختبار وحصة محددة.
+model ExamInvigilation {
+  id        String   @id @default(cuid())
+  schoolId  String
+  date      DateTime @db.Date
+  period    Int
+  room      String
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([date, period, room])
   @@index([schoolId, date])
 }
