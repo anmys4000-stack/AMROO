@@ -89,6 +89,7 @@ model Student {
   createdAt     DateTime         @default(now())
   attendance    Attendance[]
   behaviors     BehaviorRecord[]
+  excuses       Excuse[]
 
   @@index([schoolId])
 }
@@ -140,4 +141,25 @@ model TimetableEntry {
 
   @@unique([classId, weekday, period])
   @@index([schoolId])
+}
+
+// أعذار الغياب: تُقدَّم لطالب في تاريخ محدد، وتُعتمد أو تُرفض.
+model Excuse {
+  id        String       @id @default(cuid())
+  schoolId  String
+  studentId String
+  student   Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  date      DateTime     @db.Date
+  reason    String
+  status    ExcuseStatus @default(PENDING)
+  createdBy String?
+  createdAt DateTime     @default(now())
+
+  @@index([schoolId, date])
+}
+
+enum ExcuseStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
