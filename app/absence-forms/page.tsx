@@ -1,5 +1,6 @@
 import { prisma } from "../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../src/lib/auth";
+import PrintButton from "./PrintButton";
 
 // شرائح الإنذار حسب عدد أيام الغياب غير المعذور. القيم قابلة للتعديل حسب لائحة المدرسة.
 const TIERS = [
@@ -53,6 +54,7 @@ export default async function AbsenceFormsPage() {
     <main className="page">
       <h1>نماذج الإنذار والتعهد</h1>
       <p>تُحسب أيام الغياب من سجل الحضور، وتُعرض الطلاب الذين بلغوا 3 أيام غياب فأكثر.</p>
+      <PrintButton />
       {rows.length === 0 ? (
         <p>لا يوجد طلاب بلغوا حد الإنذار.</p>
       ) : (

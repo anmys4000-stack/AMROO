@@ -41,6 +41,16 @@ export default async function MessagesPage() {
       })
     : [];
 
+  // الأنشطة المعتمدة تظهر لأولياء الأمور.
+  const approvedActivities = isGuardian
+    ? await prisma.activityPlan.findMany({
+        where: { schoolId: user.schoolId, approved: true, date: { gte: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000) } },
+        select: { id: true, title: true, date: true, kind: true },
+        orderBy: { date: "desc" },
+        take: 20,
+      })
+    : [];
+
   const students = canSend
     ? await prisma.student.findMany({
         where: { schoolId: user.schoolId, isActive: true },
@@ -64,6 +74,23 @@ export default async function MessagesPage() {
                 <li key={c.id} className="row">
                   <span>{c.fullName}</span>
                   <span>{c.pointsAwards.reduce((sum, a) => sum + a.points, 0)} نقطة</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+      {isGuardian && (
+        <section className="card">
+          <h2>الأنشطة المعتمدة</h2>
+          {approvedActivities.length === 0 ? (
+            <p>لا توجد أنشطة معتمدة خلال الأسبوعين الأخيرين.</p>
+          ) : (
+            <ul className="list">
+              {approvedActivities.map((a) => (
+                <li key={a.id} className="row">
+                  <span>{a.title}</span>
+                  <span dir="ltr">{a.date.toISOString().slice(0, 10)}</span>
                 </li>
               ))}
             </ul>
