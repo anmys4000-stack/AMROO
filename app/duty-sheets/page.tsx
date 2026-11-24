@@ -1,6 +1,7 @@
 import { prisma } from "../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../src/lib/auth";
 import PrintButton from "../violation-forms/PrintButton";
+import GenerateForm from "./GenerateForm";
 
 // كشف الإشراف على الفسحة والمناوبة لليوم المختار، من تعيينات الإشراف الموجودة، للطباعة والاعتماد.
 export default async function DutySheetsPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
@@ -35,6 +36,7 @@ export default async function DutySheetsPage({ searchParams }: { searchParams: P
   return (
     <main className="page">
       <h1>كشف الإشراف والمناوبة</h1>
+      {hasPermission(user, "visits:approve") && <GenerateForm defaultDate={iso} />}
       <form method="GET" className="card no-print">
         <input type="date" name="date" dir="ltr" defaultValue={iso} />
         <button type="submit">عرض</button>
