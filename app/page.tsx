@@ -163,6 +163,9 @@ export default async function HomePage() {
       <nav className="card">
         <a href="/students">الطلاب والمواظبة</a> · <a href="/timetable">الجدول الدراسي</a> ·{" "}
         <a href="/behavior">السلوك</a> · <a href="/import">استيراد البيانات</a>
+        <br />
+        <a href="/services">خدمات شؤون الطلاب</a> · <a href="/period-attendance">تحضير الحصص</a> ·{" "}
+        <a href="/absence-forms">نماذج الإنذار</a> · <a href="/usage">إحصاءات الاستخدام</a>
       </nav>
     </main>
   );

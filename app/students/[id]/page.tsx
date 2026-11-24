@@ -40,6 +40,7 @@ export default async function StudentFilePage({ params }: { params: Promise<{ id
   if (!student || student.schoolId !== user.schoolId) notFound();
 
   const messagesCount = await prisma.message.count({ where: { studentId: id } });
+  const pointsTotal = await prisma.pointsAward.aggregate({ where: { studentId: id, schoolId: user.schoolId }, _sum: { points: true } });
 
   return (
     <main className="page">
@@ -49,6 +50,7 @@ export default async function StudentFilePage({ params }: { params: Promise<{ id
         <p>ولي الأمر: {student.guardianName ?? "غير مسجل"}</p>
         <p dir="ltr">{student.guardianPhone ?? ""}</p>
         <p>عدد الرسائل المرسلة لولي الأمر: {messagesCount}</p>
+        <p>مجموع النقاط التحفيزية: {pointsTotal._sum.points ?? 0}</p>
       </section>
 
       <section className="card">
