@@ -36,6 +36,7 @@ model User {
   email              String           @unique
   leaves             LeaveRequest[]
   duties             DutyAssignment[]
+  circularReads      CircularRead[]
   fullName           String
   passwordHash       String
   role               Role
@@ -257,4 +258,30 @@ model Substitution {
 
   @@unique([classId, date, period])
   @@index([schoolId, date])
+}
+
+// تعميم تنشره الإدارة ويطّلع عليه المعنيون.
+model Circular {
+  id        String         @id @default(cuid())
+  schoolId  String
+  title     String
+  body      String
+  audience  String // "ALL" للجميع، "TEACHERS" للمعلمين فقط
+  createdBy String?
+  createdAt DateTime       @default(now())
+  reads     CircularRead[]
+
+  @@index([schoolId, createdAt])
+}
+
+// سجل الاطلاع على التعميم: من اطّلع ومتى.
+model CircularRead {
+  id         String   @id @default(cuid())
+  circularId String
+  circular   Circular @relation(fields: [circularId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt     DateTime @default(now())
+
+  @@unique([circularId, userId])
 }
