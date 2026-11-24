@@ -67,12 +67,13 @@ model AuditLog {
 // كل جدول يحمل schoolId لعزل البيانات. بيانات الطالب محدودة بما يلزم فقط.
 
 model SchoolClass {
-  id       String           @id @default(cuid())
-  schoolId String
-  school   School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  name     String // مثال: أول ثانوي / 1
-  students Student[]
-  periods  TimetableEntry[]
+  id        String           @id @default(cuid())
+  schoolId  String
+  school    School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name      String // مثال: أول ثانوي / 1
+  students  Student[]
+  periods   TimetableEntry[]
+  examSlots ExamSlot[]
 
   @@unique([schoolId, name])
 }
@@ -284,4 +285,19 @@ model CircularRead {
   readAt     DateTime @default(now())
 
   @@unique([circularId, userId])
+}
+
+// حصة اختبار: مادة فصل في يوم وحصة محددة.
+model ExamSlot {
+  id          String      @id @default(cuid())
+  schoolId    String
+  date        DateTime    @db.Date
+  period      Int
+  classId     String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject     String
+  createdAt   DateTime    @default(now())
+
+  @@unique([classId, date, period])
+  @@index([schoolId, date])
 }
