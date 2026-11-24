@@ -38,6 +38,7 @@ model User {
   duties             DutyAssignment[]
   circularReads      CircularRead[]
   invigilations      ExamInvigilation[]
+  weeklyPlans        WeeklyPlan[]
   fullName           String
   passwordHash       String
   role               Role
@@ -316,4 +317,32 @@ model ExamInvigilation {
 
   @@unique([date, period, room])
   @@index([schoolId, date])
+}
+
+// خطة نشاط مدرسي: صفي أو غير صفي أو إذاعة أو زيارة، تُعتمد لتظهر للمعلمين.
+model ActivityPlan {
+  id        String   @id @default(cuid())
+  schoolId  String
+  kind      String // "CLASS" صفي، "NON_CLASS" غير صفي، "BROADCAST" إذاعة، "VISIT" زيارة
+  title     String
+  date      DateTime @db.Date
+  approved  Boolean  @default(false)
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([schoolId, date])
+}
+
+// الخطة الأسبوعية للمعلم: يرفعها كل معلم عن أسبوعه.
+model WeeklyPlan {
+  id        String   @id @default(cuid())
+  schoolId  String
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  weekStart DateTime @db.Date
+  content   String
+  createdAt DateTime @default(now())
+
+  @@unique([teacherId, weekStart])
+  @@index([schoolId, weekStart])
 }
