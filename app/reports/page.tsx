@@ -63,6 +63,14 @@ export default async function ReportsPage() {
       </section>
 
       <section className="card">
+        <h2>تصدير إلى Excel</h2>
+        <p>
+          <a href="/api/export?type=students">قائمة الطلاب</a> · <a href="/api/export?type=behavior">السلوك</a> ·{" "}
+          <a href="/api/export?type=attendance">الحضور</a>
+        </p>
+      </section>
+
+      <section className="card">
         <h2>الطلاب لكل فصل</h2>
         <p>إجمالي الطلاب المرتبطين بفصل: {totalStudents}</p>
         <ul className="list">
