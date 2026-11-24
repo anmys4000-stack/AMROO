@@ -39,6 +39,7 @@ model User {
   circularReads      CircularRead[]
   invigilations      ExamInvigilation[]
   weeklyPlans        WeeklyPlan[]
+  staffAttendance    StaffAttendance[]
   committeeMembers   ExamCommitteeMember[]
   fullName           String
   passwordHash       String
@@ -100,6 +101,7 @@ model Student {
   excuses       Excuse[]
   messages      Message[]
   referrals     Referral[]
+  pointsAwards  PointsAward[]
   learningCases LearningCase[]
   leaveRequests LeaveRequest[]
 
@@ -398,4 +400,58 @@ model PeriodCheck {
 
   @@unique([classId, date, period])
   @@index([schoolId, date])
+}
+
+// نقاط إيجابية يُمنحها الطالب مع السبب، ويراها ولي الأمر لاحقًا.
+model PointsAward {
+  id        String   @id @default(cuid())
+  schoolId  String
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  points    Int
+  reason    String
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([schoolId, studentId])
+}
+
+// حضور المعلم والإداري: تأخر أو خروج مبكر أو غياب، مع المدة بالدقائق.
+model StaffAttendance {
+  id        String   @id @default(cuid())
+  schoolId  String
+  teacherId String
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  kind      String // "LATE" تأخر، "EARLY_LEAVE" خروج مبكر، "ABSENT" غياب
+  minutes   Int      @default(0)
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([schoolId, date])
+}
+
+// تقرير المناوبة اليومي: ملاحظات يوم المناوبة في نموذج واحد.
+model DutyReport {
+  id        String   @id @default(cuid())
+  schoolId  String
+  date      DateTime @db.Date
+  notes     String
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@unique([schoolId, date])
+}
+
+// تقرير نشاط طلابي: نص التنفيذ والشواهد، يقيّمه الإدارة.
+model ActivityReport {
+  id        String   @id @default(cuid())
+  schoolId  String
+  title     String
+  body      String
+  evidence  String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([schoolId, createdAt])
 }
