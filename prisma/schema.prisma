@@ -39,6 +39,7 @@ model User {
   circularReads      CircularRead[]
   invigilations      ExamInvigilation[]
   weeklyPlans        WeeklyPlan[]
+  classVisits        ClassVisit[]
   staffAttendance    StaffAttendance[]
   committeeMembers   ExamCommitteeMember[]
   fullName           String
@@ -455,4 +456,22 @@ model ActivityReport {
   createdAt DateTime @default(now())
 
   @@index([schoolId, createdAt])
+}
+
+// زيارة صفية: يطلبها المعلم أو الوكيل، ويعتمدها الوكيل بموعد.
+model ClassVisit {
+  id          String   @id @default(cuid())
+  schoolId    String
+  visitorName String
+  teacherId   String?
+  teacher     User?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  date        DateTime @db.Date
+  period      Int
+  className   String
+  note        String?
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  @@index([schoolId, date])
 }

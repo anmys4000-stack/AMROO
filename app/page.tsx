@@ -165,7 +165,7 @@ export default async function HomePage() {
         <a href="/behavior">السلوك</a> · <a href="/import">استيراد البيانات</a>
         <br />
         <a href="/services">خدمات شؤون الطلاب</a> · <a href="/period-attendance">تحضير الحصص</a> ·{" "}
-        <a href="/absence-forms">نماذج الإنذار</a> · <a href="/usage">إحصاءات الاستخدام</a> · <a href="/stats">إحصاءات الشؤون التعليمية</a>
+        <a href="/absence-forms">نماذج الإنذار</a> · <a href="/usage">إحصاءات الاستخدام</a> · <a href="/stats">إحصاءات الشؤون التعليمية</a> · <a href="/visits">الزيارات الصفية</a>
       </nav>
     </main>
   );
