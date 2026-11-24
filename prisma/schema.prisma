@@ -70,13 +70,14 @@ model AuditLog {
 // كل جدول يحمل schoolId لعزل البيانات. بيانات الطالب محدودة بما يلزم فقط.
 
 model SchoolClass {
-  id        String           @id @default(cuid())
-  schoolId  String
-  school    School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  name      String // مثال: أول ثانوي / 1
-  students  Student[]
-  periods   TimetableEntry[]
-  examSlots ExamSlot[]
+  id               String           @id @default(cuid())
+  schoolId         String
+  school           School           @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  name             String // مثال: أول ثانوي / 1
+  students         Student[]
+  periods          TimetableEntry[]
+  examSlots        ExamSlot[]
+  homeroomLeaderId String?
 
   @@unique([schoolId, name])
 }
@@ -99,6 +100,7 @@ model Student {
   excuses       Excuse[]
   messages      Message[]
   referrals     Referral[]
+  learningCases LearningCase[]
   leaves        LeaveRequest[]
 
   @@index([schoolId])
@@ -368,4 +370,18 @@ model ExamCommitteeMember {
   role        String // "رئيس" أو "عضو" أو "مراقب"
 
   @@unique([committeeId, teacherId])
+}
+
+// حالة صعوبات تعلم أو نطق: تُسجَّل للطالب وتُتابع حتى تُغلق.
+model LearningCase {
+  id          String   @id @default(cuid())
+  schoolId    String
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  kind        String // "LEARNING" صعوبات تعلم، "SPEECH" صعوبات نطق
+  description String
+  open        Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([schoolId, kind])
 }
