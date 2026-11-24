@@ -1,6 +1,7 @@
 import { prisma } from "../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../src/lib/auth";
 import ResetButton from "./ResetButton";
+import EditButton from "./EditButton";
 
 // صفحة المعلمين: الحاصلون على حساب، ثم أسماء المعلمين الموجودين في الجدول دون حساب بعد.
 export default async function TeachersPage() {
@@ -52,7 +53,12 @@ export default async function TeachersPage() {
             <li key={t.id} className="card row">
               <span>{t.fullName}</span>
               <span>{t.specialty ?? ""}</span>
-              {user.role === "PRINCIPAL" && <ResetButton userId={t.id} />}
+              {user.role === "PRINCIPAL" && (
+                <>
+                  <EditButton userId={t.id} fullName={t.fullName} specialty={t.specialty ?? ""} />
+                  <ResetButton userId={t.id} />
+                </>
+              )}
             </li>
           ))}
         </ul>
