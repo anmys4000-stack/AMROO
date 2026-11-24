@@ -91,6 +91,7 @@ model Student {
   behaviors     BehaviorRecord[]
   excuses       Excuse[]
   messages      Message[]
+  referrals     Referral[]
 
   @@index([schoolId])
 }
@@ -176,4 +177,25 @@ model Message {
   createdAt DateTime @default(now())
 
   @@index([schoolId, studentId])
+}
+
+// إحالة طالب إلى الوكيل أو الموجه، وتُغلق بعد توثيق الإجراء المتخذ.
+model Referral {
+  id        String         @id @default(cuid())
+  schoolId  String
+  studentId String
+  student   Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reason    String
+  action    String?
+  status    ReferralStatus @default(OPEN)
+  createdBy String?
+  createdAt DateTime       @default(now())
+  closedAt  DateTime?
+
+  @@index([schoolId, status])
+}
+
+enum ReferralStatus {
+  OPEN
+  CLOSED
 }
