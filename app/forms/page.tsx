@@ -12,6 +12,10 @@ const FORMS: { href: string; label: string }[] = [
   { href: "/forms/behavior-pledge", label: "نموذج تعهد سلوكي" },
   { href: "/forms/guardian-notice", label: "إشعار ولي الأمر بمشكلة سلوكية" },
   { href: "/forms/guardian-invitation", label: "خطاب دعوة ولي الأمر" },
+  { href: "/forms/incident-record", label: "محضر ضبط واقعة" },
+  { href: "/forms/committee-minutes", label: "محضر اجتماع لجنة التوجيه الطلابي" },
+  { href: "/forms/abuse-report", label: "نموذج إبلاغ عن حالة إيذاء" },
+  { href: "/forms/high-risk-report", label: "نموذج إبلاغ عن حالة عالية الخطورة" },
 ];
 
 // فهرس النماذج المطبوعة. كل نموذج يُطبع من صفحته مباشرة.
