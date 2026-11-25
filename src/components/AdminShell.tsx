@@ -20,19 +20,23 @@ export default function AdminShell({ fullName, role, children }: { fullName: str
           <strong>مدرستي</strong>
           <small>الجدول، السلوك، المواظبة، والإشراف المدرسي</small>
         </div>
-        <div className="today">
-          <span>اليوم</span>
-          <strong>{todayIso}</strong>
-        </div>
-        <a className="home" href="/">لوحة التحكم</a>
-        {groups.map((g) => (
-          <div key={g.title} className="group">
-            <p>{g.title}</p>
-            {g.links.map(([href, label]) => (
-              <a key={href} href={href}>{label}</a>
-            ))}
+        <input type="checkbox" id="nav-toggle" className="nav-toggle" />
+        <label htmlFor="nav-toggle" className="menu-btn">القائمة</label>
+        <div className="navbody">
+          <div className="today">
+            <span>اليوم</span>
+            <strong>{todayIso}</strong>
           </div>
-        ))}
+          <a className="home" href="/">لوحة التحكم</a>
+          {groups.map((g) => (
+            <div key={g.title} className="group">
+              <p>{g.title}</p>
+              {g.links.map(([href, label]) => (
+                <a key={href} href={href}>{label}</a>
+              ))}
+            </div>
+          ))}
+        </div>
       </aside>
       <div className="main">
         <header className="top">
@@ -79,10 +83,16 @@ export default function AdminShell({ fullName, role, children }: { fullName: str
         .feed { list-style: none; margin: 0; padding: 0; }
         .feed li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
         .muted { color: #6b7280; }
+        .menu-btn { display: none; }
+        .nav-toggle { display: none; }
         @media (max-width: 800px) {
           .panels { grid-template-columns: 1fr; }
           .shell { grid-template-columns: 1fr; }
-          .side { position: static; }
+          .side { position: static; gap: 0; }
+          .menu-btn { display: block; margin-top: 10px; padding: 10px; background: rgba(255,255,255,.14); border-radius: 8px; text-align: center; color: #fff; cursor: pointer; font-weight: 700; }
+          .navbody { display: none; }
+          .nav-toggle:checked ~ .navbody { display: block; }
+          .main { padding: 12px; }
         }
         @media (prefers-color-scheme: dark) {
           .shell { background: #0f1720; }
