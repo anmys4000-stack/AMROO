@@ -18,14 +18,24 @@ const TITLES: Record<string, string> = {
   "committee-minutes": "محضر اجتماع لجنة التوجيه الطلابي",
   "abuse-report": "نموذج إبلاغ عن حالة إيذاء",
   "high-risk-report": "نموذج إبلاغ عن حالة عالية الخطورة",
+  "behavior-plan": "نموذج خطة تعديل السلوك",
+  "absence-excused": "نموذج إجراء الغياب بعذر",
+  "absence-unexcused": "نموذج إجراء الغياب بدون عذر",
+  "positive-behavior-record": "نموذج رصد درجات السلوك المتميز",
+  "compensation-chances": "نموذج فرص تعويض درجات السلوك الإيجابي",
 };
 
-const STUDENT_FORMS = new Set(["oral-warning", "behavior-pledge", "guardian-notice", "guardian-invitation", "incident-record", "abuse-report", "high-risk-report"]);
+const STUDENT_FORMS = new Set(["oral-warning", "behavior-pledge", "guardian-notice", "guardian-invitation", "incident-record", "abuse-report", "high-risk-report", "behavior-plan", "absence-excused", "absence-unexcused", "positive-behavior-record", "compensation-chances"]);
 
 const BODY: Record<string, string> = {
   "oral-warning": "نفيد بأن الطالب المذكور أعلاه قد تلقى تنبيهًا شفهيًا بسبب المخالفة الموضحة أدناه، ونأمل الالتزام بالسلوك المدرسي.",
   "behavior-pledge": "أتعهد أنا الطالب المذكور أعلاه بالالتزام بالأنظمة واللوائح المدرسية، وبعدم تكرار المخالفة الموضحة أدناه، وأتحمل مسؤولية ذلك.",
   "guardian-notice": "نحيط ولي أمر الطالب المذكور أعلاه علمًا بوقوع المشكلة السلوكية الموضحة أدناه، ونرجو المتابعة والتعاون مع المدرسة.",
+  "behavior-plan": "نضع هذه الخطة لتعديل السلوك غير المرغوب فيه للطالب المذكور أعلاه، وقد حُدّدت فيها المشكلة وأسبابها وإجراءاتها ومتابعتها بالتعاون مع ولي الأمر.",
+  "absence-excused": "نفيد بأن الطالب المذكور أعلاه تغيّب بعذر مقبول، وقد اتخذت الإجراءات المبينة أدناه وفق لائحة المواظبة المعتمدة.",
+  "absence-unexcused": "نفيد بأن الطالب المذكور أعلاه تغيّب بدون عذر، وقد اتخذت الإجراءات المبينة أدناه وفق لائحة المواظبة المعتمدة، ونرجو تعاونكم.",
+  "positive-behavior-record": "نسجّل فيما يلي الدرجات المكتسبة للطالب المذكور أعلاه في السلوك الإيجابي المتميز، مع شواهد التنفيذ.",
+  "compensation-chances": "نمنح الطالب المذكور أعلاه فرصة لتعويض ما حُسم من درجات السلوك الإيجابي وفق الأنشطة المبينة أدناه، ونشعر ولي أمره بذلك.",
   "incident-record": "نثبت بهذا المحضر وقوع الواقعة السلوكية الموضحة أدناه، وقد تم ضبطها وتوثيق أطرافها وفق الإجراءات المعتمدة.",
   "committee-minutes": "عقدت لجنة التوجيه الطلابي اجتماعها لدراسة حالة الطالب المذكور أعلاه، واتخذت القرارات الموضحة أدناه.",
   "abuse-report": "نبلغ عن اشتباه بحالة إيذاء تعرّض لها أو يتعرض لها الطالب المذكور أعلاه، وفق الإجراءات المعتمدة، لاتخاذ اللازم.",

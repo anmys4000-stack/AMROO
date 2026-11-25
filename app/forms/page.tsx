@@ -16,6 +16,11 @@ const FORMS: { href: string; label: string }[] = [
   { href: "/forms/committee-minutes", label: "محضر اجتماع لجنة التوجيه الطلابي" },
   { href: "/forms/abuse-report", label: "نموذج إبلاغ عن حالة إيذاء" },
   { href: "/forms/high-risk-report", label: "نموذج إبلاغ عن حالة عالية الخطورة" },
+  { href: "/forms/behavior-plan", label: "نموذج خطة تعديل السلوك" },
+  { href: "/forms/absence-excused", label: "نموذج إجراء الغياب بعذر" },
+  { href: "/forms/absence-unexcused", label: "نموذج إجراء الغياب بدون عذر" },
+  { href: "/forms/positive-behavior-record", label: "نموذج رصد درجات السلوك المتميز" },
+  { href: "/forms/compensation-chances", label: "نموذج فرص تعويض درجات السلوك الإيجابي" },
 ];
 
 // فهرس النماذج المطبوعة. كل نموذج يُطبع من صفحته مباشرة.
