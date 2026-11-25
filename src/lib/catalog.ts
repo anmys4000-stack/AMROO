@@ -51,6 +51,8 @@ export const CATALOG: CatalogItem[] = [
   { title: "نموذج إجراء الغياب بدون عذر", section: "النماذج", href: "/forms/absence-unexcused", keywords: "غياب مواظبة" },
   { title: "نموذج رصد درجات السلوك المتميز", section: "النماذج", href: "/forms/positive-behavior-record", keywords: "سلوك إيجابي متميز درجات" },
   { title: "نموذج فرص تعويض درجات السلوك الإيجابي", section: "النماذج", href: "/forms/compensation-chances", keywords: "تعويض سلوك إيجابي" },
+  { title: "نموذج تحويل طالب لوكيل شؤون الطلاب", section: "النماذج", href: "/forms/referral", keywords: "تحويل إحالة" },
+  { title: "تعهد الالتزام بالحضور", section: "النماذج", href: "/forms/attendance-pledge", keywords: "حضور تعهد" },
   { title: "محضر ضبط واقعة", section: "النماذج", href: "/forms/incident-record", keywords: "سلوك واقعة" },
   { title: "محضر اجتماع لجنة التوجيه الطلابي", section: "النماذج", href: "/forms/committee-minutes", keywords: "توجيه لجنة" },
   { title: "نموذج إبلاغ عن حالة إيذاء", section: "النماذج", href: "/forms/abuse-report", keywords: "إيذاء" },

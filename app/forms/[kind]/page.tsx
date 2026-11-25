@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "../../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../../src/lib/auth";
 import PrintButton from "../../violation-forms/PrintButton";
+import StudentSheet from "./StudentSheet";
 
 const TITLES: Record<string, string> = {
   representatives: "كشف رواد الفصول",
@@ -23,9 +24,11 @@ const TITLES: Record<string, string> = {
   "absence-unexcused": "نموذج إجراء الغياب بدون عذر",
   "positive-behavior-record": "نموذج رصد درجات السلوك المتميز",
   "compensation-chances": "نموذج فرص تعويض درجات السلوك الإيجابي",
+  referral: "نموذج تحويل طالب لوكيل شؤون الطلاب",
+  "attendance-pledge": "تعهد الالتزام بالحضور",
 };
 
-const STUDENT_FORMS = new Set(["oral-warning", "behavior-pledge", "guardian-notice", "guardian-invitation", "incident-record", "abuse-report", "high-risk-report", "behavior-plan", "absence-excused", "absence-unexcused", "positive-behavior-record", "compensation-chances"]);
+const STUDENT_FORMS = new Set(["oral-warning", "behavior-pledge", "guardian-notice", "guardian-invitation", "incident-record", "abuse-report", "high-risk-report", "behavior-plan", "absence-excused", "absence-unexcused", "positive-behavior-record", "compensation-chances", "referral", "attendance-pledge"]);
 
 const BODY: Record<string, string> = {
   "oral-warning": "نفيد بأن الطالب المذكور أعلاه قد تلقى تنبيهًا شفهيًا بسبب المخالفة الموضحة أدناه، ونأمل الالتزام بالسلوك المدرسي.",
@@ -69,6 +72,21 @@ export default async function PrintableFormPage({ params, searchParams }: { para
       take: 800,
     });
     const s = studentId ? students.find((x) => x.id === studentId) : undefined;
+    const school = await prisma.school.findUnique({ where: { id: sid }, select: { name: true } });
+    const rec = s
+      ? await prisma.behaviorRecord.findFirst({
+          where: { schoolId: sid, studentId: s.id, category: "مخالفة" },
+          orderBy: { createdAt: "desc" },
+          select: { description: true, createdAt: true },
+        })
+      : null;
+    const latestViolation = rec
+      ? {
+          text: rec.description.replace(/\(الدرجة[^)]*\).*$/, "").trim(),
+          degree: (rec.description.match(/\(([^)]*الدرجة[^)]*)\)/)?.[1]) ?? "",
+          date: rec.createdAt.toISOString().slice(0, 10),
+        }
+      : null;
     return (
       <main className="page">
         <h1>{title}</h1>
@@ -83,18 +101,14 @@ export default async function PrintableFormPage({ params, searchParams }: { para
           <button type="submit">عرض النموذج</button>
         </form>
         {s && (
-          <section className="card sheet">
-            <p>التاريخ: <span dir="ltr">{iso}</span></p>
-            <p>السيد/ولي أمر الطالب: {s.guardianName ?? "................................"} · <span dir="ltr">{s.guardianPhone ?? ""}</span></p>
-            <p>اسم الطالب: {s.fullName} · الفصل: {s.schoolClass?.name ?? "-"}</p>
-            <p>{BODY[kind]}</p>
-            {kind === "committee-minutes" && <p>الحضور: ______________________ · ______________________ · ______________________</p>}
-            <p>المخالفة / السبب: ______________________________________________</p>
-            <p>______________________________________________________________</p>
-            <p>الإجراء / الموعد: ______________________________________________</p>
-            <p>وكيل شؤون الطلاب: ____________ · التوقيع: ____________ · ولي الأمر: ____________</p>
-            <PrintButton />
-          </section>
+          <StudentSheet
+            kind={kind}
+            title={title}
+            school={school?.name ?? ""}
+            iso={iso}
+            student={{ fullName: s.fullName, className: s.schoolClass?.name ?? "-", guardianName: s.guardianName, guardianPhone: s.guardianPhone }}
+            violation={latestViolation}
+          />
         )}
       </main>
     );

@@ -21,6 +21,8 @@ const FORMS: { href: string; label: string }[] = [
   { href: "/forms/absence-unexcused", label: "نموذج إجراء الغياب بدون عذر" },
   { href: "/forms/positive-behavior-record", label: "نموذج رصد درجات السلوك المتميز" },
   { href: "/forms/compensation-chances", label: "نموذج فرص تعويض درجات السلوك الإيجابي" },
+  { href: "/forms/referral", label: "نموذج تحويل طالب لوكيل شؤون الطلاب" },
+  { href: "/forms/attendance-pledge", label: "تعهد الالتزام بالحضور" },
 ];
 
 // فهرس النماذج المطبوعة. كل نموذج يُطبع من صفحته مباشرة.
