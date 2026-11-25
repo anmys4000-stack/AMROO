@@ -146,51 +146,11 @@ export default async function HomePage() {
     }),
   ]);
   const absentToday = await prisma.attendance.count({ where: { schoolId, date: today, status: "ABSENT" } });
-  const todayIso = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Riyadh" })).toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
-  const groups: { title: string; links: [string, string][] }[] = [
-    { title: "البيانات", links: [["/students", "الطلاب والمواظبة"], ["/teachers", "المعلمون"], ["/classes", "الفصول"], ["/guardians", "أولياء الأمور"], ["/import", "استيراد البيانات"]] },
-    { title: "الجدول والحصص", links: [["/timetable", "الجدول الدراسي"], ["/period-attendance", "تحضير الحصص"], ["/substitutes", "حصص الانتظار"], ["/duty-sheets", "الإشراف والمناوبة"]] },
-    { title: "السلوك والتوجيه", links: [["/behavior", "السلوك"], ["/services", "خدمات شؤون الطلاب"], ["/referrals", "الإحالات"], ["/learning-cases", "صعوبات التعلم والنطق"], ["/violation-forms", "محضر المخالفة"], ["/absence-forms", "نماذج الإنذار"]] },
-    { title: "الإدارة", links: [["/leave", "الاستئذان والإجازات"], ["/excuses", "الأعذار"], ["/circulars", "التعاميم"], ["/messages", "الرسائل"], ["/visits", "الزيارات الصفية"], ["/plans", "الخطط الأسبوعية"], ["/activities", "الأنشطة"]] },
-    { title: "الاختبارات والتقارير", links: [["/exams", "جدول الاختبارات"], ["/exam-sheets", "كشوف الاختبارات"], ["/invigilation", "لجان القاعات"], ["/reports", "التقارير"], ["/stats", "إحصاءات الشؤون التعليمية"], ["/usage", "إحصاءات الاستخدام"]] },
-  ];
-  const roleLabel: Record<string, string> = { PRINCIPAL: "مدير المدرسة", STUDENT_AFFAIRS: "وكيل شؤون الطلاب", GUIDANCE: "الموجّه", ACADEMIC_DEPUTY: "وكيل الشؤون التعليمية", TEACHER: "معلم", GUARDIAN: "ولي أمر" };
   const actionLabel: Record<string, string> = { student_deleted: "حذف طالب", user_updated: "تحديث بيانات مستخدم", password_reset: "إعادة تعيين كلمة مرور", user_created: "إضافة مستخدم", excuse_decided: "البتّ في عذر" };
 
   return (
-    <div className="shell">
-      <aside className="side">
-        <div className="brand">
-          <strong>مدرستي</strong>
-          <small>الجدول، السلوك، المواظبة، والإشراف المدرسي</small>
-        </div>
-        <div className="today">
-          <span>اليوم</span>
-          <strong>{todayIso}</strong>
-        </div>
-        <a className="home" href="/">لوحة التحكم</a>
-        {groups.map((g) => (
-          <div key={g.title} className="group">
-            <p>{g.title}</p>
-            {g.links.map(([href, label]) => (
-              <a key={href} href={href}>{label}</a>
-            ))}
-          </div>
-        ))}
-      </aside>
-      <div className="main">
-        <header className="top">
-          <h1>لوحة التحكم</h1>
-          <div className="who">
-            <span className="avatar">{user.fullName.slice(0, 1)}</span>
-            <div>
-              <strong>{user.fullName}</strong>
-              <small>{roleLabel[user.role] ?? user.role}</small>
-            </div>
-          </div>
-        </header>
-
+    <div>
         <section className="kpis">
           <div className="kpi"><small>الطلاب</small><strong>{students}</strong></div>
           <div className="kpi"><small>الفصول</small><strong>{classes}</strong></div>
@@ -226,52 +186,6 @@ export default async function HomePage() {
             )}
           </div>
         </section>
-      </div>
-
-      <style>{`
-        .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; background: #f3f5f8; }
-        .side { background: linear-gradient(180deg, #0f3d3e, #0b2f30); color: #e6f2f1; padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
-        .brand strong { display: block; font-size: 1.4rem; }
-        .brand small { color: #9fc7c4; font-size: 0.75rem; }
-        .today { background: rgba(255,255,255,.08); border-radius: 10px; padding: 10px; margin: 10px 0; font-size: 0.8rem; color: #cfe6e4; }
-        .today strong { display: block; color: #fff; font-size: 0.95rem; }
-        .side a { color: #e6f2f1; text-decoration: none; padding: 6px 10px; border-radius: 8px; font-size: 0.9rem; }
-        .side a:hover { background: rgba(255,255,255,.1); }
-        .side a.home { background: rgba(255,255,255,.14); font-weight: 700; }
-        .group p { margin: 10px 0 2px; color: #7fb5b1; font-size: 0.75rem; padding: 0 10px; }
-        .main { padding: 18px; min-width: 0; }
-        .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-        .top h1 { margin: 0; font-size: 1.5rem; }
-        .who { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 12px; padding: 8px 12px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-        .who small { display: block; color: #6b7280; }
-        .avatar { width: 36px; height: 36px; border-radius: 50%; background: #0f5c5c; color: #fff; display: grid; place-items: center; font-weight: 700; }
-        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
-        .kpi { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.05); border-top: 3px solid #0f5c5c; }
-        .kpi small { display: block; color: #6b7280; margin-bottom: 6px; }
-        .kpi strong { font-size: 1.6rem; }
-        .kpi.good { border-top-color: #15803d; }
-        .kpi.warn { border-top-color: #b45309; }
-        .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .panel { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
-        .panel h2 { margin: 0 0 10px; font-size: 1.05rem; }
-        .quick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .quick a { background: #eef5f5; color: #0f4f4f; text-decoration: none; padding: 12px; border-radius: 10px; text-align: center; font-weight: 600; }
-        .feed { list-style: none; margin: 0; padding: 0; }
-        .feed li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
-        .muted { color: #6b7280; }
-        @media (max-width: 800px) {
-          .shell { grid-template-columns: 1fr; }
-          .side { position: static; }
-          .panels { grid-template-columns: 1fr; }
-        }
-        @media (prefers-color-scheme: dark) {
-          .shell { background: #0f1720; }
-          .kpi, .panel, .who { background: #1a2430; color: #e6ebf1; }
-          .quick a { background: #203040; color: #cfe6e4; }
-          .feed li { border-bottom-color: #2a3644; }
-          .muted, .kpi small, .who small { color: #9aa7b6; }
-        }
-      `}</style>
     </div>
   );
 }

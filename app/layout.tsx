@@ -1,15 +1,22 @@
 import type { ReactNode } from "react";
+import { getCurrentUser } from "../src/lib/auth";
+import { prisma } from "../src/lib/db";
+import AdminShell from "../src/components/AdminShell";
 
 export const metadata = {
   title: "AMROO - منصّة إدارة مدرسية",
   description: "منصّة إدارة مدرسية رقمية",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // الهيكل الجانبي للإدارة فقط؛ المعلم وولي الأمر وصفحات الدخول تبقى بتصميمها الحالي.
+  const current = await getCurrentUser();
+  const showShell = !!current && current.role !== "TEACHER" && current.role !== "GUARDIAN";
+  const me = showShell ? await prisma.user.findUnique({ where: { id: current!.id }, select: { fullName: true } }) : null;
   return (
     <html lang="ar" dir="rtl">
       <body>
-        {children}
+        {showShell && me ? <AdminShell fullName={me.fullName} role={current!.role}>{children}</AdminShell> : children}
         <style>{`
           :root { color-scheme: light dark; }
           body { margin: 0; font-family: system-ui, sans-serif; background: #f4f6f8; color: #1d2733; }
