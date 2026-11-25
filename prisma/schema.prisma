@@ -452,6 +452,8 @@ model ActivityReport {
   title     String
   body      String
   evidence  String?
+  activityId String?
+  witnesses  String? // شاهدان اثنان، كل اسم في سطر
   createdBy String?
   createdAt DateTime @default(now())
 

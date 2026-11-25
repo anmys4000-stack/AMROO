@@ -27,7 +27,7 @@ export default async function ServicesPage() {
   const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Riyadh" }).slice(0, 10) + "T00:00:00Z");
   const todayIso = today.toISOString().slice(0, 10);
 
-  const [students, teachers, points, staff, duty, activities] = await Promise.all([
+  const [students, teachers, points, staff, duty, approvedActivities, activities] = await Promise.all([
     canPoints
       ? prisma.student.findMany({
           where: { schoolId: user.schoolId, isActive: true },
@@ -66,6 +66,14 @@ export default async function ServicesPage() {
         })
       : Promise.resolve(null),
     canActivity
+      ? prisma.activityPlan.findMany({
+          where: { schoolId: user.schoolId, approved: true },
+          select: { id: true, title: true, date: true },
+          orderBy: { date: "desc" },
+          take: 100,
+        })
+      : Promise.resolve([]),
+    canActivity
       ? prisma.activityReport.findMany({
           where: { schoolId: user.schoolId },
           select: { id: true, title: true, body: true, evidence: true, createdAt: true },
@@ -89,6 +97,7 @@ export default async function ServicesPage() {
         points={points.map((p) => ({ id: p.id, student: p.student.fullName, points: p.points, reason: p.reason, date: p.createdAt.toISOString().slice(0, 10) }))}
         staff={staff.map((s) => ({ id: s.id, teacher: s.teacher.fullName, kind: s.kind, minutes: s.minutes, date: s.date.toISOString().slice(0, 10) }))}
         dutyNotes={duty?.notes ?? ""}
+        approvedActivities={approvedActivities.map((a) => ({ id: a.id, title: a.title, date: a.date.toISOString().slice(0, 10) }))}
         activities={activities.map((a) => ({ id: a.id, title: a.title, body: a.body, evidence: a.evidence ?? "", date: a.createdAt.toISOString().slice(0, 10) }))}
       />
     </main>

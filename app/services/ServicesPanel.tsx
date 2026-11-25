@@ -14,6 +14,7 @@ type Props = {
   staff: { id: string; teacher: string; kind: string; minutes: number; date: string }[];
   dutyNotes: string;
   activities: { id: string; title: string; body: string; evidence: string; date: string }[];
+  approvedActivities: { id: string; title: string; date: string }[];
 };
 
 const KIND_LABEL: Record<string, string> = { LATE: "تأخر", EARLY_LEAVE: "انصراف مبكر", ABSENT: "غياب" };
@@ -126,10 +127,17 @@ export default function ServicesPanel(p: Props) {
       {p.canActivity && (
         <section className="card">
           <h2>تقرير نشاط</h2>
-          <form onSubmit={(e) => onSubmit(e, (fd) => ({ service: "activity-report", title: fd.get("title"), body: fd.get("body"), evidence: fd.get("evidence") }))}>
+          <form onSubmit={(e) => onSubmit(e, (fd) => ({ service: "activity-report", activityId: fd.get("activityId"), title: fd.get("title"), body: fd.get("body"), evidence: fd.get("evidence"), witnesses: fd.get("witnesses") }))}>
+            <select name="activityId">
+              <option value="">نشاط من الخطة (اختياري)</option>
+              {p.approvedActivities.map((a) => (
+                <option key={a.id} value={a.id}>{a.title} · {a.date}</option>
+              ))}
+            </select>
             <input name="title" placeholder="عنوان النشاط" minLength={3} maxLength={120} required />
-            <textarea name="body" rows={4} minLength={3} maxLength={4000} placeholder="وصف النشاط والنتائج" required />
-            <input name="evidence" placeholder="مرجع الأدلة (اختياري)" maxLength={500} />
+            <textarea name="body" rows={4} minLength={3} maxLength={4000} placeholder="وصف النشاط والأهداف والنتائج والزمن" required />
+            <textarea name="witnesses" rows={2} placeholder={"شاهد أول\nشاهد ثانٍ"} required />
+            <input name="evidence" placeholder="مرجع الصور الشاهدة (صورتان)" maxLength={500} />
             <button type="submit" disabled={busy}>حفظ التقرير</button>
           </form>
           <ul className="list">

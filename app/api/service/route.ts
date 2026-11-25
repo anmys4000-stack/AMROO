@@ -66,9 +66,23 @@ export async function POST(request: Request) {
     if (!need("attendance:record")) return forbidden();
     const title = str(body.title, 3, 120);
     const text = str(body.body, 3, 4000);
-    if (!title || !text) return bad("بيانات التقرير غير صالحة");
+    const activityId = typeof body.activityId === "string" ? body.activityId : "";
+    const witnesses = typeof body.witnesses === "string" ? body.witnesses.split("\n").map((w) => w.trim()).filter(Boolean) : [];
+    if (!title || !text || witnesses.length !== 2) return bad("التقرير يحتاج عنوانًا ووصفًا وشاهدين اثنين");
+    if (activityId) {
+      const activity = await prisma.activityPlan.findUnique({ where: { id: activityId } });
+      if (!activity || activity.schoolId !== user.schoolId) return notFound("النشاط غير موجود");
+    }
     await prisma.activityReport.create({
-      data: { schoolId: user.schoolId, title, body: text, evidence: str(body.evidence, 0, 500), createdBy: user.id },
+      data: {
+        schoolId: user.schoolId,
+        title,
+        body: text,
+        evidence: str(body.evidence, 0, 500),
+        activityId: activityId || null,
+        witnesses: witnesses.join("\n"),
+        createdBy: user.id,
+      },
     });
     return NextResponse.json({ ok: true }, { status: 201 });
   }

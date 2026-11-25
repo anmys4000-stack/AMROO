@@ -19,7 +19,9 @@ export default async function ActivitiesPage() {
       </main>
     );
   }
-  if (!hasPermission(user, "students:view")) {
+  // المعلم وولي الأمر يرون الأنشطة المعتمدة فقط، للعرض دون تعديل.
+  const isViewer = user.role === "TEACHER" || user.role === "GUARDIAN";
+  if (!isViewer && !hasPermission(user, "students:view")) {
     return (
       <main className="page">
         <p>ليست لديك صلاحية لعرض الأنشطة.</p>
@@ -28,7 +30,7 @@ export default async function ActivitiesPage() {
   }
 
   const activities = await prisma.activityPlan.findMany({
-    where: { schoolId: user.schoolId },
+    where: { schoolId: user.schoolId, ...(isViewer ? { approved: true } : {}) },
     orderBy: { date: "asc" },
     take: 200,
     select: { id: true, kind: true, title: true, date: true, approved: true },
@@ -36,7 +38,7 @@ export default async function ActivitiesPage() {
 
   return (
     <main className="page">
-      <h1>خطة النشاط المدرسي</h1>
+      <h1>{isViewer ? "الأنشطة المعتمدة" : "خطة النشاط المدرسي"}</h1>
       <ActivitiesPanel
         canEdit={hasPermission(user, "visits:approve")}
         activities={activities.map((a) => ({
