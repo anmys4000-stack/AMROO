@@ -45,6 +45,7 @@ export const CATALOG: CatalogItem[] = [
   { title: "نموذج تعهد سلوكي", section: "النماذج", href: "/forms/behavior-pledge", keywords: "سلوك إجراء" },
   { title: "إشعار ولي الأمر بمشكلة سلوكية", section: "النماذج", href: "/forms/guardian-notice", keywords: "ولي أمر سلوك" },
   { title: "خطاب دعوة ولي الأمر", section: "النماذج", href: "/forms/guardian-invitation", keywords: "دعوة ولي أمر" },
+  { title: "ملف الحالة", section: "السلوك", href: "/violation-cases", keywords: "مخالفة إجراء توصية" },
   { title: "محضر ضبط واقعة", section: "النماذج", href: "/forms/incident-record", keywords: "سلوك واقعة" },
   { title: "محضر اجتماع لجنة التوجيه الطلابي", section: "النماذج", href: "/forms/committee-minutes", keywords: "توجيه لجنة" },
   { title: "نموذج إبلاغ عن حالة إيذاء", section: "النماذج", href: "/forms/abuse-report", keywords: "إيذاء" },
