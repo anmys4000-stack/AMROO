@@ -41,4 +41,8 @@ export const CATALOG: CatalogItem[] = [
   { title: "كشف الغياب اليومي", section: "النماذج", href: "/forms/absence" },
   { title: "كشف حضور وانصراف المستأذنين", section: "النماذج", href: "/forms/leave" },
   { title: "كشف المعلمين والإداريين", section: "النماذج", href: "/forms/staff" },
+  { title: "نموذج تنبيه شفهي", section: "النماذج", href: "/forms/oral-warning", keywords: "سلوك إجراء" },
+  { title: "نموذج تعهد سلوكي", section: "النماذج", href: "/forms/behavior-pledge", keywords: "سلوك إجراء" },
+  { title: "إشعار ولي الأمر بمشكلة سلوكية", section: "النماذج", href: "/forms/guardian-notice", keywords: "ولي أمر سلوك" },
+  { title: "خطاب دعوة ولي الأمر", section: "النماذج", href: "/forms/guardian-invitation", keywords: "دعوة ولي أمر" },
 ];

@@ -10,10 +10,23 @@ const TITLES: Record<string, string> = {
   absence: "كشف الغياب اليومي",
   leave: "كشف حضور وانصراف المستأذنين",
   staff: "كشف المعلمين والإداريين",
+  "oral-warning": "تنبيه شفهي",
+  "behavior-pledge": "تعهد سلوكي",
+  "guardian-notice": "إشعار ولي الأمر بمشكلة سلوكية",
+  "guardian-invitation": "خطاب دعوة ولي الأمر",
+};
+
+const STUDENT_FORMS = new Set(["oral-warning", "behavior-pledge", "guardian-notice", "guardian-invitation"]);
+
+const BODY: Record<string, string> = {
+  "oral-warning": "نفيد بأن الطالب المذكور أعلاه قد تلقى تنبيهًا شفهيًا بسبب المخالفة الموضحة أدناه، ونأمل الالتزام بالسلوك المدرسي.",
+  "behavior-pledge": "أتعهد أنا الطالب المذكور أعلاه بالالتزام بالأنظمة واللوائح المدرسية، وبعدم تكرار المخالفة الموضحة أدناه، وأتحمل مسؤولية ذلك.",
+  "guardian-notice": "نحيط ولي أمر الطالب المذكور أعلاه علمًا بوقوع المشكلة السلوكية الموضحة أدناه، ونرجو المتابعة والتعاون مع المدرسة.",
+  "guardian-invitation": "يسرنا دعوتكم لحضور المدرسة لمناقشة وضع الطالب المذكور أعلاه، في الموعد المحدد أدناه، لمتابعة سلوكه ومستواه.",
 };
 
 // نماذج مطبوعة تُعبّأ من البيانات الموجودة، مع حقول فارغة للتوقيع والملاحظات.
-export default async function PrintableFormPage({ params, searchParams }: { params: Promise<{ kind: string }>; searchParams: Promise<{ date?: string }> }) {
+export default async function PrintableFormPage({ params, searchParams }: { params: Promise<{ kind: string }>; searchParams: Promise<{ date?: string; student?: string }> }) {
   const { kind } = await params;
   const title = TITLES[kind];
   if (!title) notFound();
@@ -25,10 +38,48 @@ export default async function PrintableFormPage({ params, searchParams }: { para
       </main>
     );
   }
-  const { date: rawDate } = await searchParams;
+  const { date: rawDate, student: studentId } = await searchParams;
   const iso = /^\d{4}-\d{2}-\d{2}$/.test(rawDate ?? "") ? (rawDate as string) : new Date().toISOString().slice(0, 10);
   const date = new Date(`${iso}T00:00:00Z`);
   const sid = user.schoolId;
+
+  if (STUDENT_FORMS.has(kind)) {
+    const students = await prisma.student.findMany({
+      where: { schoolId: sid, isActive: true },
+      select: { id: true, fullName: true, guardianName: true, guardianPhone: true, schoolClass: { select: { name: true } } },
+      orderBy: { fullName: "asc" },
+      take: 800,
+    });
+    const s = studentId ? students.find((x) => x.id === studentId) : undefined;
+    return (
+      <main className="page">
+        <h1>{title}</h1>
+        <form method="GET" className="card no-print">
+          <select name="student" defaultValue={s?.id ?? ""} required>
+            <option value="">اختر الطالب</option>
+            {students.map((x) => (
+              <option key={x.id} value={x.id}>{x.fullName} · {x.schoolClass?.name ?? ""}</option>
+            ))}
+          </select>
+          <input type="date" name="date" dir="ltr" defaultValue={iso} />
+          <button type="submit">عرض النموذج</button>
+        </form>
+        {s && (
+          <section className="card sheet">
+            <p>التاريخ: <span dir="ltr">{iso}</span></p>
+            <p>السيد/ولي أمر الطالب: {s.guardianName ?? "................................"} · <span dir="ltr">{s.guardianPhone ?? ""}</span></p>
+            <p>اسم الطالب: {s.fullName} · الفصل: {s.schoolClass?.name ?? "-"}</p>
+            <p>{BODY[kind]}</p>
+            <p>المخالفة / السبب: ______________________________________________</p>
+            <p>______________________________________________________________</p>
+            <p>الإجراء / الموعد: ______________________________________________</p>
+            <p>وكيل شؤون الطلاب: ____________ · التوقيع: ____________ · ولي الأمر: ____________</p>
+            <PrintButton />
+          </section>
+        )}
+      </main>
+    );
+  }
 
   let body: React.ReactNode;
   if (kind === "representatives") {

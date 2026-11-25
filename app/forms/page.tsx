@@ -8,6 +8,10 @@ const FORMS: { href: string; label: string }[] = [
   { href: "/forms/absence", label: "كشف الغياب اليومي" },
   { href: "/forms/leave", label: "كشف حضور وانصراف المستأذنين" },
   { href: "/forms/staff", label: "كشف المعلمين والإداريين" },
+  { href: "/forms/oral-warning", label: "نموذج تنبيه شفهي" },
+  { href: "/forms/behavior-pledge", label: "نموذج تعهد سلوكي" },
+  { href: "/forms/guardian-notice", label: "إشعار ولي الأمر بمشكلة سلوكية" },
+  { href: "/forms/guardian-invitation", label: "خطاب دعوة ولي الأمر" },
 ];
 
 // فهرس النماذج المطبوعة. كل نموذج يُطبع من صفحته مباشرة.
