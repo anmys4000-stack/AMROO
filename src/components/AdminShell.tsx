@@ -4,7 +4,7 @@ const groups: { title: string; links: [string, string][] }[] = [
   { title: "البيانات", links: [["/students", "الطلاب والمواظبة"], ["/teachers", "المعلمون"], ["/classes", "الفصول"], ["/guardians", "أولياء الأمور"], ["/import", "استيراد البيانات"]] },
   { title: "الجدول والحصص", links: [["/timetable", "الجدول الدراسي"], ["/period-attendance", "تحضير الحصص"], ["/substitutes", "حصص الانتظار"], ["/duty-sheets", "الإشراف والمناوبة"]] },
   { title: "السلوك والتوجيه", links: [["/behavior", "السلوك"], ["/services", "خدمات شؤون الطلاب"], ["/referrals", "الإحالات"], ["/learning-cases", "صعوبات التعلم والنطق"], ["/violation-forms", "محضر المخالفة"], ["/absence-forms", "نماذج الإنذار"]] },
-  { title: "الإدارة", links: [["/leave", "الاستئذان والإجازات"], ["/excuses", "الأعذار"], ["/circulars", "التعاميم"], ["/messages", "الرسائل"], ["/visits", "الزيارات الصفية"], ["/plans", "الخطط الأسبوعية"], ["/activities", "الأنشطة"]] },
+  { title: "الإدارة", links: [["/leave", "الاستئذان والإجازات"], ["/excuses", "الأعذار"], ["/circulars", "التعاميم"], ["/messages", "الرسائل"], ["/visits", "الزيارات الصفية"], ["/plans", "الخطط الأسبوعية"], ["/activities", "الأنشطة"], ["/forms", "النماذج المطبوعة"]] },
   { title: "الاختبارات والتقارير", links: [["/exams", "جدول الاختبارات"], ["/exam-sheets", "كشوف الاختبارات"], ["/invigilation", "لجان القاعات"], ["/reports", "التقارير"], ["/stats", "إحصاءات الشؤون التعليمية"], ["/usage", "إحصاءات الاستخدام"]] },
 ];
 

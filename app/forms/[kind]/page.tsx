@@ -1,0 +1,98 @@
+import { notFound } from "next/navigation";
+import { prisma } from "../../../src/lib/db";
+import { getCurrentUser, hasPermission } from "../../../src/lib/auth";
+import PrintButton from "../../violation-forms/PrintButton";
+
+const TITLES: Record<string, string> = {
+  representatives: "كشف رواد الفصول",
+  learning: "كشف حالات صعوبات التعلم",
+  speech: "كشف حالات صعوبات النطق",
+  absence: "كشف الغياب اليومي",
+  leave: "كشف حضور وانصراف المستأذنين",
+  staff: "كشف المعلمين والإداريين",
+};
+
+// نماذج مطبوعة تُعبّأ من البيانات الموجودة، مع حقول فارغة للتوقيع والملاحظات.
+export default async function PrintableFormPage({ params, searchParams }: { params: Promise<{ kind: string }>; searchParams: Promise<{ date?: string }> }) {
+  const { kind } = await params;
+  const title = TITLES[kind];
+  if (!title) notFound();
+  const user = await getCurrentUser();
+  if (!user || !hasPermission(user, "students:view")) {
+    return (
+      <main className="page">
+        <p>ليست لديك صلاحية لعرض هذا النموذج.</p>
+      </main>
+    );
+  }
+  const { date: rawDate } = await searchParams;
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(rawDate ?? "") ? (rawDate as string) : new Date().toISOString().slice(0, 10);
+  const date = new Date(`${iso}T00:00:00Z`);
+  const sid = user.schoolId;
+
+  let body: React.ReactNode;
+  if (kind === "representatives") {
+    const classes = await prisma.schoolClass.findMany({ where: { schoolId: sid }, orderBy: { name: "asc" }, select: { name: true, homeroomLeaderId: true } });
+    const leaders = await prisma.user.findMany({ where: { schoolId: sid, id: { in: classes.map((c) => c.homeroomLeaderId).filter((x): x is string => !!x) } }, select: { id: true, fullName: true } });
+    const byId = new Map(leaders.map((l) => [l.id, l.fullName]));
+    body = (
+      <table className="table">
+        <thead><tr><th>الفصل</th><th>الرائد</th><th>التوقيع</th></tr></thead>
+        <tbody>{classes.map((c) => <tr key={c.name}><td>{c.name}</td><td>{c.homeroomLeaderId ? byId.get(c.homeroomLeaderId) ?? "" : ""}</td><td></td></tr>)}</tbody>
+      </table>
+    );
+  } else if (kind === "learning" || kind === "speech") {
+    const cases = await prisma.learningCase.findMany({
+      where: { schoolId: sid, kind: kind === "learning" ? "LEARNING" : "SPEECH" },
+      orderBy: { createdAt: "asc" },
+      select: { description: true, open: true, student: { select: { fullName: true, schoolClass: { select: { name: true } } } } },
+    });
+    body = (
+      <table className="table">
+        <thead><tr><th>#</th><th>الطالب</th><th>الفصل</th><th>الوصف</th><th>الحالة</th></tr></thead>
+        <tbody>{cases.map((c, i) => <tr key={i}><td>{i + 1}</td><td>{c.student.fullName}</td><td>{c.student.schoolClass?.name ?? ""}</td><td>{c.description}</td><td>{c.open ? "مفتوحة" : "مغلقة"}</td></tr>)}</tbody>
+      </table>
+    );
+  } else if (kind === "absence") {
+    const rows = await prisma.attendance.findMany({
+      where: { schoolId: sid, date, status: { in: ["ABSENT", "LATE"] } },
+      select: { status: true, student: { select: { fullName: true, schoolClass: { select: { name: true } } } } },
+      orderBy: { student: { fullName: "asc" } },
+    });
+    body = (
+      <table className="table">
+        <thead><tr><th>#</th><th>الطالب</th><th>الفصل</th><th>الحالة</th><th>ملاحظة</th></tr></thead>
+        <tbody>{rows.map((r, i) => <tr key={i}><td>{i + 1}</td><td>{r.student.fullName}</td><td>{r.student.schoolClass?.name ?? ""}</td><td>{r.status === "ABSENT" ? "غائب" : "متأخر"}</td><td></td></tr>)}</tbody>
+      </table>
+    );
+  } else if (kind === "leave") {
+    const leaves = await prisma.leaveRequest.findMany({
+      where: { schoolId: sid, date, status: "APPROVED" },
+      select: { leaveAt: true, returnAt: true, reason: true, teacher: { select: { fullName: true } } },
+      orderBy: { leaveAt: "asc" },
+    });
+    body = (
+      <table className="table">
+        <thead><tr><th>#</th><th>المعلم</th><th>وقت الخروج</th><th>وقت العودة</th><th>السبب</th><th>التوقيع</th></tr></thead>
+        <tbody>{leaves.map((l, i) => <tr key={i}><td>{i + 1}</td><td>{l.teacher.fullName}</td><td dir="ltr">{l.leaveAt}</td><td dir="ltr">{l.returnAt}</td><td>{l.reason}</td><td></td></tr>)}</tbody>
+      </table>
+    );
+  } else {
+    const staff = await prisma.user.findMany({ where: { schoolId: sid, isActive: true }, select: { fullName: true, role: true }, orderBy: { fullName: "asc" } });
+    body = (
+      <table className="table">
+        <thead><tr><th>#</th><th>الاسم</th><th>الدور</th><th>التوقيع</th></tr></thead>
+        <tbody>{staff.map((s, i) => <tr key={i}><td>{i + 1}</td><td>{s.fullName}</td><td>{s.role}</td><td></td></tr>)}</tbody>
+      </table>
+    );
+  }
+
+  return (
+    <main className="page">
+      <h1>{title}</h1>
+      {(kind === "absence" || kind === "leave") && <p>التاريخ: <span dir="ltr">{iso}</span></p>}
+      <PrintButton />
+      <section className="card sheet">{body}</section>
+    </main>
+  );
+}
