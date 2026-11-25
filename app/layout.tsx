@@ -20,7 +20,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <style>{`
           :root { color-scheme: light dark; }
           body { margin: 0; font-family: system-ui, sans-serif; background: #f4f6f8; color: #1d2733; }
-          .login { min-height: 100vh; display: grid; place-items: center; padding: 16px; box-sizing: border-box; }
+          .login { min-height: 100vh; display: grid; place-items: center; padding: 16px; box-sizing: border-box; background: linear-gradient(135deg, #0f2a44 0%, #0f766e 55%, #14b8a6 100%); }
+          .login .card { border-radius: 16px; padding: 32px 28px; }
+          .login h1 { color: #0f3d3e; text-align: center; }
+          .login .sub { text-align: center; }
+          .login button { background: #0f766e; font-weight: 700; }
+          .login button:hover { background: #0d5f58; }
           .card { width: 100%; max-width: 380px; background: #fff; border-radius: 12px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,.08); display: grid; gap: 8px; }
           h1 { margin: 0; font-size: 22px; }
           .sub { margin: 0 0 12px; color: #5b6878; font-size: 14px; }
