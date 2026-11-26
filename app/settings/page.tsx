@@ -10,6 +10,7 @@ const ROLE_LABELS: Record<string, string> = {
   ACADEMIC_DEPUTY: "وكيل الشؤون التعليمية",
   TEACHER: "معلم",
   GUARDIAN: "ولي أمر",
+  ACTIVITY_LEADER: "رائد النشاط",
 };
 
 // الإعدادات: اسم المدرسة، والمستخدمون وأدوارهم، والفصول. متاحة للمدير فقط.

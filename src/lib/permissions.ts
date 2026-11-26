@@ -5,7 +5,8 @@ export type Role =
   | "GUIDANCE"
   | "ACADEMIC_DEPUTY"
   | "TEACHER"
-  | "GUARDIAN";
+  | "GUARDIAN"
+  | "ACTIVITY_LEADER";
 
 export type Permission =
   | "users:manage"
@@ -34,6 +35,7 @@ const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   ACADEMIC_DEPUTY: ["students:view", "timetable:manage", "visits:approve"],
   TEACHER: ["students:view", "attendance:record", "behavior:record"],
   GUARDIAN: ["guardian:view_own_child"],
+  ACTIVITY_LEADER: ["students:view"],
 };
 
 export function can(role: Role, permission: Permission): boolean {

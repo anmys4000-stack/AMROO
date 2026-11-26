@@ -10,6 +10,7 @@ const EXTRA_ROLE_OPTIONS: [string, string][] = [
   ["GUIDANCE", "موجه طلابي"],
   ["ACADEMIC_DEPUTY", "وكيل الشؤون التعليمية"],
   ["TEACHER", "معلم"],
+  ["ACTIVITY_LEADER", "رائد النشاط"],
 ];
 
 // اسم المدرسة، وإضافة مستخدم بكلمة مرور مؤقتة، وقائمة المستخدمين.
@@ -188,6 +189,7 @@ export default function SettingsPanel({ schoolName, profile, users, classCount }
           <option value="STUDENT_AFFAIRS">وكيل شؤون الطلاب</option>
           <option value="GUIDANCE">الموجه الطلابي</option>
           <option value="PRINCIPAL">مدير المدرسة</option>
+          <option value="ACTIVITY_LEADER">رائد النشاط</option>
         </select>
         <button type="submit">إنشاء الحساب</button>
         {created && <p className="notice" role="status" dir="ltr">{created}</p>}

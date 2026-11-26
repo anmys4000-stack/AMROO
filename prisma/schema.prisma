@@ -18,6 +18,7 @@ enum Role {
   ACADEMIC_DEPUTY // وكيل الشؤون التعليمية
   TEACHER // المعلم
   GUARDIAN // ولي الأمر
+  ACTIVITY_LEADER // رائد النشاط
 }
 
 model School {

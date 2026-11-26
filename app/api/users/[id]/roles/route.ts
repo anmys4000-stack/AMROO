@@ -4,7 +4,7 @@ import { getCurrentUser, hasPermission } from "../../../../../src/lib/auth";
 
 export const runtime = "nodejs";
 
-const ALLOWED = ["PRINCIPAL", "STUDENT_AFFAIRS", "GUIDANCE", "ACADEMIC_DEPUTY", "TEACHER"] as const;
+const ALLOWED = ["PRINCIPAL", "STUDENT_AFFAIRS", "GUIDANCE", "ACADEMIC_DEPUTY", "TEACHER", "ACTIVITY_LEADER"] as const;
 
 // المدير يحدد الأدوار الإضافية للمستخدم. الدور الرئيسي لا يُغيَّر هنا، والدور الإضافي لا يكون الدور الرئيسي نفسه.
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {

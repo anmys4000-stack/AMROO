@@ -6,7 +6,7 @@ import { hashPassword } from "../../../src/lib/password";
 
 export const runtime = "nodejs";
 
-const ROLES = ["PRINCIPAL", "STUDENT_AFFAIRS", "GUIDANCE", "ACADEMIC_DEPUTY", "TEACHER"] as const;
+const ROLES = ["PRINCIPAL", "STUDENT_AFFAIRS", "GUIDANCE", "ACADEMIC_DEPUTY", "TEACHER", "ACTIVITY_LEADER"] as const;
 
 // إنشاء حساب مستخدم جديد داخل مدرسة المدير، بكلمة مرور مؤقتة تُعرض مرة واحدة.
 export async function POST(request: Request) {

@@ -9,7 +9,7 @@ const groups: { title: string; links: [string, string][] }[] = [
   { title: "الاختبارات والتقارير", links: [["/exams", "جدول الاختبارات"], ["/exam-sheets", "كشوف الاختبارات"], ["/invigilation", "لجان القاعات"], ["/reports", "التقارير"], ["/stats", "إحصاءات الشؤون التعليمية"], ["/usage", "إحصاءات الاستخدام"]] },
 ];
 
-const roleLabel: Record<string, string> = { PRINCIPAL: "مدير المدرسة", STUDENT_AFFAIRS: "وكيل شؤون الطلاب", GUIDANCE: "الموجّه", ACADEMIC_DEPUTY: "وكيل الشؤون التعليمية", TEACHER: "معلم", GUARDIAN: "ولي أمر" };
+const roleLabel: Record<string, string> = { PRINCIPAL: "مدير المدرسة", STUDENT_AFFAIRS: "وكيل شؤون الطلاب", GUIDANCE: "الموجّه", ACADEMIC_DEPUTY: "وكيل الشؤون التعليمية", TEACHER: "معلم", GUARDIAN: "ولي أمر", ACTIVITY_LEADER: "رائد النشاط" };
 
 // الهيكل المشترك للإدارة، على نسق مسار: شريط علوي أبيض (القائمة، البحث، المستخدم، الخروج)،
 // وقائمة جانبية داكنة يمين الشاشة تُطوى وتُفتح بزر القائمة، وفيها التاريخ الهجري والميلادي والأقسام.

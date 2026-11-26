@@ -9,6 +9,7 @@ const LABELS: Record<string, string> = {
   GUIDANCE: "الموجّه الطلابي",
   TEACHER: "معلم",
   GUARDIAN: "ولي أمر",
+  ACTIVITY_LEADER: "رائد النشاط",
 };
 
 // قائمة تبديل الدور: تظهر فقط إذا كان للمستخدم أكثر من دور.
