@@ -40,7 +40,10 @@ const FORM_LINKS = [
   { href: "incident-record", label: "محضر ضبط واقعة" },
 ];
 
-export default async function ViolationCasesPage({ searchParams }: { searchParams: Promise<{ student?: string }> }) {
+// أسماء الدرجات كما تُكتب في وصف المخالفة (مثل: "... (الدرجة الثانية · حسم 2 درجات)").
+const DEGREE_KEYS = ["", "الدرجة الأولى", "الدرجة الثانية", "الدرجة الثالثة", "الدرجة الرابعة", "الدرجة الخامسة"];
+
+export default async function ViolationCasesPage({ searchParams }: { searchParams: Promise<{ student?: string; q?: string; classId?: string; degree?: string }> }) {
   const user = await getCurrentUser();
   if (!user) {
     return (
@@ -57,7 +60,8 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
     );
   }
 
-  const { student: studentId } = await searchParams;
+  const params = await searchParams;
+  const studentId = params.student;
   const students = await prisma.student.findMany({
     where: { schoolId: user.schoolId, isActive: true },
     select: { id: true, fullName: true, schoolClass: { select: { name: true } } },
@@ -83,9 +87,117 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
   const repetitionOf = (id: string) => repMap.get(id) ?? 1;
   const violations = [...all].reverse();
 
+  // سجل المخالفات: بحث باسم الطالب والفصل والدرجة، كما في صفحة مسار.
+  const q = (params.q ?? "").trim();
+  const classId = params.classId ?? "";
+  const degree = Number(params.degree ?? "0");
+  const logWhere = {
+    schoolId: user.schoolId,
+    category: "مخالفة",
+    ...(degree >= 1 && degree <= 5 ? { description: { contains: DEGREE_KEYS[degree] } } : {}),
+    student: {
+      ...(q ? { fullName: { contains: q } } : {}),
+      ...(classId ? { classId } : {}),
+    },
+  };
+  const [classList, logTotal, logRows] = selected
+    ? [[], 0, []]
+    : await Promise.all([
+        prisma.schoolClass.findMany({ where: { schoolId: user.schoolId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+        prisma.behaviorRecord.count({ where: logWhere }),
+        prisma.behaviorRecord.findMany({
+          where: logWhere,
+          select: {
+            id: true,
+            description: true,
+            recordedBy: true,
+            createdAt: true,
+            student: { select: { id: true, fullName: true, schoolClass: { select: { name: true } } } },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 300,
+        }),
+      ]);
+
   return (
     <main className="page">
-      <h1>ملف الحالة</h1>
+      <style>{`
+        .vc-table { width: 100%; border-collapse: collapse; }
+        .vc-table th, .vc-table td { padding: 8px; border-bottom: 1px solid #e5e9f0; text-align: right; font-size: .9rem; vertical-align: top; }
+        .vc-table th { background: #f3f5f8; color: #0f3d3e; }
+        .vc-filter { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+        .vc-filter label { display: grid; gap: 4px; font-size: .85rem; }
+      `}</style>
+      {!selected && (
+        <>
+          <h1>سجل المخالفات ({logTotal})</h1>
+          <form method="GET" className="card no-print vc-filter">
+            <label>
+              بحث باسم الطالب
+              <input name="q" defaultValue={q} placeholder="اكتب اسم الطالب" />
+            </label>
+            <label>
+              الفصل
+              <select name="classId" defaultValue={classId}>
+                <option value="">جميع الفصول</option>
+                {classList.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              الدرجة
+              <select name="degree" defaultValue={String(degree)}>
+                <option value="0">جميع الدرجات</option>
+                {DEGREE_KEYS.slice(1).map((label, i) => (
+                  <option key={label} value={i + 1}>{label}</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit">بحث</button>
+          </form>
+          <section className="card">
+            {logRows.length === 0 ? (
+              <p>لا توجد مخالفات مطابقة.</p>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table className="vc-table">
+                  <thead>
+                    <tr>
+                      <th>الطالب</th>
+                      <th>الفصل</th>
+                      <th>المخالفة</th>
+                      <th>الدرجة</th>
+                      <th>نقاط الحسم</th>
+                      <th>سجّلها</th>
+                      <th>التاريخ</th>
+                      <th>ملف الحالة</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {logRows.map((r) => {
+                      const key = Object.keys(ESCALATION).find((k) => r.description.includes(k));
+                      return (
+                        <tr key={r.id}>
+                          <td>{r.student.fullName}</td>
+                          <td>{r.student.schoolClass?.name ?? "-"}</td>
+                          <td>{r.description}</td>
+                          <td>{key ?? "-"}</td>
+                          <td>{key ? ESCALATION[key].points : "-"}</td>
+                          <td>{r.recordedBy ?? "-"}</td>
+                          <td dir="ltr">{r.createdAt.toISOString().slice(0, 10)}</td>
+                          <td><a href={`/violation-cases?student=${r.student.id}`}>فتح</a></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        </>
+      )}
+      {selected && <h1>ملف الحالة</h1>}
       <form method="GET" className="card no-print">
         <select name="student" defaultValue={selected?.id ?? ""} required>
           <option value="">اختر الطالب</option>
