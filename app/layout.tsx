@@ -11,12 +11,13 @@ export const metadata = {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // الهيكل الجانبي للإدارة فقط؛ المعلم وولي الأمر وصفحات الدخول تبقى بتصميمها الحالي.
   const current = await getCurrentUser();
-  const showShell = !!current && current.role !== "TEACHER" && current.role !== "GUARDIAN";
+  // يبقى الهيكل ظاهرًا لمن لديه أي دور إداري، حتى إذا اختار دور المعلم، ليتمكن من العودة.
+  const showShell = !!current && current.allRoles.some((r) => r !== "TEACHER" && r !== "GUARDIAN");
   const me = showShell ? await prisma.user.findUnique({ where: { id: current!.id }, select: { fullName: true } }) : null;
   return (
     <html lang="ar" dir="rtl">
       <body>
-        {showShell && me ? <AdminShell fullName={me.fullName} role={current!.role}>{children}</AdminShell> : children}
+        {showShell && me ? <AdminShell fullName={me.fullName} role={current!.role} allRoles={current!.allRoles}>{children}</AdminShell> : children}
         <style>{`
           :root { color-scheme: light dark; }
           body { margin: 0; font-family: system-ui, sans-serif; background: #f4f6f8; color: #1d2733; }

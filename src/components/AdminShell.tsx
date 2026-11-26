@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import RoleSwitcher from "./RoleSwitcher";
 
 const groups: { title: string; links: [string, string][] }[] = [
   { title: "البيانات", links: [["/students", "الطلاب والمواظبة"], ["/teachers", "المعلمون"], ["/classes", "الفصول"], ["/guardians", "أولياء الأمور"], ["/import", "استيراد البيانات"]] },
@@ -12,7 +13,7 @@ const roleLabel: Record<string, string> = { PRINCIPAL: "مدير المدرسة"
 
 // الهيكل المشترك للإدارة، على نسق مسار: شريط علوي أبيض (القائمة، البحث، المستخدم، الخروج)،
 // وقائمة جانبية داكنة يمين الشاشة تُطوى وتُفتح بزر القائمة، وفيها التاريخ الهجري والميلادي والأقسام.
-export default function AdminShell({ fullName, role, children }: { fullName: string; role: string; children: ReactNode }) {
+export default function AdminShell({ fullName, role, allRoles, children }: { fullName: string; role: string; allRoles: string[]; children: ReactNode }) {
   const now = new Date();
   const gregorian = now.toLocaleDateString("ar-SA", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Riyadh" });
   const hijri = now.toLocaleDateString("ar-SA-u-ca-islamic", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Riyadh" });
@@ -54,6 +55,8 @@ export default function AdminShell({ fullName, role, children }: { fullName: str
             <a className="pill" href="/help/">شرح الخدمة</a>
           </div>
           <div className="top-end">
+            <RoleSwitcher roles={allRoles} active={role} />
+            <a className="ghost" href="/settings">الإعدادات</a>
             <a className="ghost" href="/auth/logout">خروج</a>
             <a className="ghost" href="/account/signature">توقيعي</a>
             <div className="who">
@@ -96,6 +99,8 @@ export default function AdminShell({ fullName, role, children }: { fullName: str
         .search { width: 240px; max-width: 100%; padding: 9px 12px; border: 1px solid #d9e1ea; border-radius: 10px; font-size: 0.9rem; }
         .pill { background: #dff3ee; color: #0f766e; font-weight: 700; padding: 8px 14px; border-radius: 10px; text-decoration: none; font-size: 0.9rem; }
         .ghost { border: 1px solid #d9e1ea; color: #1d2733; padding: 8px 12px; border-radius: 10px; text-decoration: none; font-size: 0.9rem; }
+        .role-switch { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #0f766e; font-weight: 700; }
+        .role-switch select { padding: 8px 10px; border: 1px solid #d9e1ea; border-radius: 10px; font-size: 0.9rem; background: #fff; color: #1d2733; }
         .who { display: flex; align-items: center; gap: 10px; border: 1px solid #d9e1ea; border-radius: 14px; padding: 6px 12px; }
         .who strong { display: block; font-size: 0.92rem; }
         .role { display: inline-block; background: #0f766e; color: #fff; border-radius: 8px; padding: 2px 10px; font-size: 0.75rem; }
