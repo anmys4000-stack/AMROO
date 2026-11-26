@@ -1,6 +1,7 @@
 import { prisma } from "../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../src/lib/auth";
 import PrintButton from "../violation-forms/PrintButton";
+import ViolationRowActions from "../../src/components/ViolationRowActions";
 
 // ملف الحالة: الإجراء التصاعدي حسب درجة المخالفة وعدد تكرارها، كما في دليل مسار
 // (دليل الإجراءات التربوية التصاعدية). كل مرحلة تنطبق من رقم التكرار المذكور وما بعده.
@@ -196,6 +197,7 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
                       <th>التاريخ</th>
                       <th>الإجراء المتخذ</th>
                       <th>ملف الحالة</th>
+                      <th>إجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -223,6 +225,7 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
                             )}
                           </td>
                           <td><a href={`/violation-cases?student=${r.student.id}`}>فتح</a></td>
+                          <td><ViolationRowActions id={r.id} description={r.description} /></td>
                         </tr>
                       );
                     })}
