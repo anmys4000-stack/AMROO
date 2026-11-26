@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DEFAULT_SETTINGS, fmt, periodTimes, type TimetableSettings } from "../../src/lib/timetable-settings";
 
 type ClassRow = { id: string; name: string };
 type Teacher = { id: string; fullName: string };
 type Entry = { id: string; weekday: number; period: number; subject: string; teacherId: string | null };
 
-const DAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
-const PERIODS = [1, 2, 3, 4, 5, 6, 7];
+const DAY_NAMES = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
 export default function TimetablePage() {
   const [classes, setClasses] = useState<ClassRow[]>([]);
@@ -16,6 +16,14 @@ export default function TimetablePage() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [settings, setSettings] = useState<TimetableSettings>(DEFAULT_SETTINGS);
+
+  // أيام الجدول وعدد الحصص من إعدادات الجدول. الجدول يدعم الأحد إلى الخميس فقط (أيام 1 إلى 5).
+  const days = settings.workdays.filter((d) => d <= 4).map((d) => ({ index: d, weekday: d + 1, name: DAY_NAMES[d] }));
+  const stageMax = Math.max(0, ...Object.values(settings.stageDayPeriods).flatMap((row) => Object.values(row ?? {}) as number[]));
+  const periodCount = Math.max(settings.defaultPeriods, stageMax, 1);
+  const PERIODS = Array.from({ length: periodCount }, (_, i) => i + 1);
+  const times = periodTimes(settings, periodCount, settings.recess1);
 
   async function load(nextClassId: string) {
     setError(null);
@@ -38,6 +46,10 @@ export default function TimetablePage() {
 
   useEffect(() => {
     load("");
+    fetch("/api/timetable/settings", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { settings?: TimetableSettings }) => d.settings && setSettings(d.settings))
+      .catch(() => undefined);
   }, []);
 
   function entryFor(weekday: number, period: number): Entry | undefined {
@@ -89,16 +101,17 @@ export default function TimetablePage() {
 
       {classId && (
         <div className="grid">
-          {DAYS.map((day, i) => (
-            <section key={day} className="card">
-              <h2>{day}</h2>
+          {days.map((day) => (
+            <section key={day.weekday} className="card">
+              <h2>{day.name}</h2>
               {PERIODS.map((p) => {
-                const weekday = i + 1;
+                const weekday = day.weekday;
                 const current = entryFor(weekday, p);
+                const t = times[p - 1];
                 return (
                   <SlotEditor
                     key={`${weekday}-${p}-${current?.id ?? "new"}`}
-                    label={`الحصة ${p}`}
+                    label={`الحصة ${p}${t ? ` · ${fmt(t.start)} - ${fmt(t.end)}` : ""}`}
                     initialSubject={current?.subject ?? ""}
                     initialTeacherId={current?.teacherId ?? ""}
                     teachers={teachers}
