@@ -91,6 +91,7 @@ model SchoolClass {
   periods          TimetableEntry[]
   examSlots        ExamSlot[]
   homeroomLeaderId String?
+  counselorId      String? // الموجه الطلابي المسؤول عن الصف (مستخدم من المدرسة نفسها)
 
   @@unique([schoolId, name])
 }

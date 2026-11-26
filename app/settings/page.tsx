@@ -1,6 +1,7 @@
 import { prisma } from "../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../src/lib/auth";
 import SettingsPanel from "./SettingsPanel";
+import OperationsPanel from "./OperationsPanel";
 
 const ROLE_LABELS: Record<string, string> = {
   PRINCIPAL: "مدير المدرسة",
@@ -41,10 +42,15 @@ export default async function SettingsPage() {
     }),
     prisma.schoolClass.findMany({
       where: { schoolId: user.schoolId },
-      select: { id: true, name: true },
+      select: { id: true, name: true, counselorId: true },
       orderBy: { name: "asc" },
     }),
   ]);
+  const counselors = await prisma.user.findMany({
+    where: { schoolId: user.schoolId, isActive: true, OR: [{ role: "GUIDANCE" }, { extraRoles: { has: "GUIDANCE" } }] },
+    select: { id: true, fullName: true },
+    orderBy: { fullName: "asc" },
+  });
 
   return (
     <main className="page">
@@ -73,6 +79,7 @@ export default async function SettingsPage() {
         }))}
         classCount={classes.length}
       />
+      <OperationsPanel classes={classes} counselors={counselors} />
     </main>
   );
 }
