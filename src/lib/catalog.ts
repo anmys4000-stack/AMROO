@@ -45,6 +45,7 @@ export const CATALOG: CatalogItem[] = [
   { title: "نموذج تعهد سلوكي", section: "النماذج", href: "/forms/behavior-pledge", keywords: "سلوك إجراء" },
   { title: "إشعار ولي الأمر بمشكلة سلوكية", section: "النماذج", href: "/forms/guardian-notice", keywords: "ولي أمر سلوك" },
   { title: "خطاب دعوة ولي الأمر", section: "النماذج", href: "/forms/guardian-invitation", keywords: "دعوة ولي أمر" },
+  { title: "دليل المخالفات السلوكية", section: "السلوك", href: "/violation-guide", keywords: "مخالفة درجة حسم دليل" },
   { title: "ملف الحالة", section: "السلوك", href: "/violation-cases", keywords: "مخالفة إجراء توصية" },
   { title: "نموذج خطة تعديل السلوك", section: "النماذج", href: "/forms/behavior-plan", keywords: "سلوك خطة تعديل" },
   { title: "نموذج إجراء الغياب بعذر", section: "النماذج", href: "/forms/absence-excused", keywords: "غياب عذر مواظبة" },
