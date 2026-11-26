@@ -132,12 +132,30 @@ export default async function HomePage() {
 
   const schoolId = user.schoolId;
   const today = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
-  const [students, classes, teachers, guardians, presentToday, recent] = await Promise.all([
-    prisma.student.count({ where: { schoolId, isActive: true } }),
-    prisma.schoolClass.count({ where: { schoolId } }),
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const [
+    attendanceToday,
+    absentToday,
+    openReferrals,
+    violationsToday,
+    violationsMonth,
+    leavesToday,
+    leavesPending,
+    teachersAbsent,
+    teacherCount,
+    loggedInToday,
+    recent,
+  ] = await Promise.all([
+    prisma.attendance.count({ where: { schoolId, date: today } }),
+    prisma.attendance.count({ where: { schoolId, date: today, status: "ABSENT" } }),
+    prisma.referral.count({ where: { schoolId, status: "OPEN" } }),
+    prisma.behaviorRecord.count({ where: { schoolId, category: "مخالفة", createdAt: { gte: today } } }),
+    prisma.behaviorRecord.count({ where: { schoolId, category: "مخالفة", createdAt: { gte: monthStart } } }),
+    prisma.leaveRequest.count({ where: { schoolId, date: today, status: "APPROVED" } }),
+    prisma.leaveRequest.count({ where: { schoolId, status: "PENDING" } }),
+    prisma.staffAttendance.count({ where: { schoolId, date: today, kind: "ABSENT" } }),
     prisma.user.count({ where: { schoolId, role: "TEACHER", isActive: true } }),
-    prisma.student.count({ where: { schoolId, isActive: true, guardianId: { not: null } } }),
-    prisma.attendance.count({ where: { schoolId, date: today, status: "PRESENT" } }),
+    prisma.user.count({ where: { schoolId, isActive: true, lastLoginAt: { gte: today } } }),
     prisma.auditLog.findMany({
       where: { schoolId },
       orderBy: { createdAt: "desc" },
@@ -145,47 +163,100 @@ export default async function HomePage() {
       select: { id: true, action: true, entity: true, createdAt: true },
     }),
   ]);
-  const absentToday = await prisma.attendance.count({ where: { schoolId, date: today, status: "ABSENT" } });
-
-  const actionLabel: Record<string, string> = { student_deleted: "حذف طالب", user_updated: "تحديث بيانات مستخدم", password_reset: "إعادة تعيين كلمة مرور", user_created: "إضافة مستخدم", excuse_decided: "البتّ في عذر" };
+  const absentPct = attendanceToday > 0 ? ((absentToday / attendanceToday) * 100).toFixed(1) : "0.0";
+  const actionLabel: Record<string, string> = { student_deleted: "حذف طالب", user_updated: "تحديث بيانات مستخدم", password_reset: "إعادة تعيين كلمة مرور", user_created: "إضافة مستخدم", excuse_decided: "البتّ في عذر", login: "دخول للنظام", credentials_reset: "توليد بيانات دخول", roles_updated: "تحديث الأدوار", counselors_assigned: "توزيع الموجهين", teachers_linked: "ربط المعلمين", school_updated: "تحديث بيانات المدرسة" };
 
   return (
-    <div>
-        <section className="kpis">
-          <div className="kpi"><small>الطلاب</small><strong>{students}</strong></div>
-          <div className="kpi"><small>الفصول</small><strong>{classes}</strong></div>
-          <div className="kpi"><small>المعلمون</small><strong>{teachers}</strong></div>
-          <div className="kpi"><small>أولياء الأمور المسجلون</small><strong>{guardians}</strong></div>
-          <div className="kpi good"><small>الحاضرون اليوم</small><strong>{presentToday}</strong></div>
-          <div className="kpi warn"><small>الغائبون اليوم</small><strong>{absentToday}</strong></div>
-        </section>
+    <div className="dash">
+      <section className="dash-card">
+        <h2 className="dash-h">مهامك اليوم</h2>
+        <div className="task-row">
+          <a className="task" href="/referrals">
+            <span className="badge">{openReferrals}</span>
+            <span>إحالات محوّلة إليك قيد المتابعة</span>
+          </a>
+          <a className="task" href="/leave">
+            <span className="badge">{leavesPending}</span>
+            <span>طلبات استئذان/إجازة بانتظار قرارك</span>
+          </a>
+        </div>
+      </section>
 
-        <section className="panels">
-          <div className="panel">
-            <h2>روابط سريعة</h2>
-            <div className="quick">
-              <a href="/attendance">تسجيل الحضور</a>
-              <a href="/behavior">تسجيل السلوك</a>
-              <a href="/leave">طلبات الاستئذان</a>
-              <a href="/substitutes">حصص الانتظار</a>
-            </div>
+      <section>
+        <h2 className="dash-h">حالة اليوم الدراسي</h2>
+        <div className="status-grid">
+          <div className="stat wide">
+            <small>نسبة الغياب اليوم</small>
+            <strong>{absentPct}%</strong>
+            <span>{absentToday} غائب من {attendanceToday}</span>
           </div>
-          <div className="panel">
-            <h2>آخر الأنشطة</h2>
-            {recent.length === 0 ? (
-              <p className="muted">لا توجد أنشطة مسجّلة بعد.</p>
-            ) : (
-              <ul className="feed">
-                {recent.map((r) => (
-                  <li key={r.id}>
-                    <span>{actionLabel[r.action] ?? r.action}</span>
-                    <small dir="ltr">{r.createdAt.toISOString().slice(0, 16).replace("T", " ")}</small>
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="stat">
+            <small>المخالفات السلوكية</small>
+            <strong>{violationsToday}</strong>
+            <span>اليوم · {violationsMonth} هذا الشهر</span>
           </div>
-        </section>
+          <div className="stat">
+            <small>الإحالات الصفية</small>
+            <strong>{openReferrals}</strong>
+            <span>قيد المتابعة</span>
+          </div>
+          <div className="stat">
+            <small>الاستئذان والإجازات اليوم</small>
+            <strong>{leavesToday}</strong>
+            <span>{leavesPending} بانتظار الرد</span>
+          </div>
+          <div className="stat">
+            <small>المعلمون الغائبون</small>
+            <strong>{teachersAbsent}</strong>
+            <span>{teachersAbsent === 0 ? "لا غياب مسجل للمعلمين" : `من ${teacherCount} معلمًا`}</span>
+          </div>
+          <div className="stat">
+            <small>الدخول للنظام اليوم</small>
+            <strong>{loggedInToday}</strong>
+            <span>من {teacherCount} معلمًا نشطًا</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="dash-card">
+        <h2 className="dash-h">آخر الأنشطة</h2>
+        {recent.length === 0 ? (
+          <p className="muted">لا توجد أنشطة مسجّلة بعد.</p>
+        ) : (
+          <ul className="feed">
+            {recent.map((r) => (
+              <li key={r.id}>
+                <span>{actionLabel[r.action] ?? r.action}</span>
+                <small dir="ltr">{r.createdAt.toISOString().slice(0, 16).replace("T", " ")}</small>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <style>{`
+        .dash { display: grid; gap: 14px; }
+        .dash-card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+        .dash-h { margin: 0 0 12px; font-size: 1.05rem; color: #0f3d3e; }
+        .task-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+        .task { display: flex; align-items: center; gap: 10px; border: 1px solid #e5e9ef; border-radius: 12px; padding: 12px; text-decoration: none; color: #1d2733; }
+        .badge { min-width: 34px; height: 34px; border-radius: 10px; background: #fff3e0; color: #b45309; font-weight: 800; display: grid; place-items: center; }
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+        .stat { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.05); border-top: 3px solid #0f5c5c; display: grid; gap: 4px; }
+        .stat.wide { background: #e9f7f4; }
+        .stat small { color: #374151; font-weight: 700; }
+        .stat strong { font-size: 2rem; color: #0f3d3e; }
+        .stat span { color: #6b7280; font-size: 0.85rem; }
+        .feed { list-style: none; margin: 0; padding: 0; }
+        .feed li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .muted { color: #6b7280; }
+        @media (prefers-color-scheme: dark) {
+          .dash-card, .stat { background: #1a2430; color: #e6ebf1; }
+          .stat.wide { background: #173b3a; }
+          .dash-h, .stat strong { color: #e6ebf1; }
+          .task { border-color: #2a3644; color: #e6ebf1; }
+        }
+      `}</style>
     </div>
   );
 }
