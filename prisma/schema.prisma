@@ -143,6 +143,13 @@ model BehaviorRecord {
   @@index([schoolId, studentId])
 }
 
+model TimetableSettings {
+  id        String   @id @default(cuid())
+  schoolId  String   @unique
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
 model TimetableEntry {
   id          String      @id @default(cuid())
   schoolId    String

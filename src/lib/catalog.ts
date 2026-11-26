@@ -10,6 +10,7 @@ export const CATALOG: CatalogItem[] = [
   { title: "أولياء الأمور", section: "بيانات الطلاب والمعلمين", href: "/guardians" },
   { title: "استيراد البيانات", section: "بيانات الطلاب والمعلمين", href: "/import", keywords: "نور اكسل" },
   { title: "الجدول الدراسي", section: "الجدول والحصص", href: "/timetable", keywords: "جدول الحصص" },
+  { title: "إعدادات الجدول الدراسي", section: "الجدول والحصص", href: "/timetable/settings", keywords: "فسحة حصص أيام العمل" },
   { title: "تحضير الحصص", section: "الجدول والحصص", href: "/period-attendance", keywords: "حضور الحصة" },
   { title: "حصص الانتظار", section: "الجدول والحصص", href: "/substitutes", keywords: "انتظار تغطية" },
   { title: "الإشراف والمناوبة", section: "الجدول والحصص", href: "/duty-sheets", keywords: "فسحة مناوبة كشف" },
