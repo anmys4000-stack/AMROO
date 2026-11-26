@@ -59,6 +59,28 @@ export default function SettingsPanel({ schoolName, profile, users, classCount }
     setP({ ...p, stages: p.stages.includes(stage) ? p.stages.filter((x) => x !== stage) : [...p.stages, stage] });
   }
 
+  const [credUser, setCredUser] = useState("");
+  const [credId, setCredId] = useState("");
+  const [credNotice, setCredNotice] = useState<string | null>(null);
+
+  async function generateCredentials(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCredNotice(null);
+    setError(null);
+    const res = await fetch(`/api/users/${credUser}/credentials`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nationalId: credId }),
+    });
+    const data = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (!res.ok) {
+      setError(data?.error ?? "تعذّر توليد بيانات الدخول");
+      return;
+    }
+    setCredNotice("تم توليد بيانات الدخول. اسم المستخدم هو رقم الهوية، وسيُطلب تغيير كلمة المرور عند أول دخول.");
+    setCredId("");
+  }
+
   async function addUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -141,6 +163,19 @@ export default function SettingsPanel({ schoolName, profile, users, classCount }
         </select>
         <button type="submit">إنشاء الحساب</button>
         {created && <p className="notice" role="status" dir="ltr">{created}</p>}
+      </form>
+
+      <form className="card" onSubmit={generateCredentials}>
+        <h2>توليد بيانات الدخول من رقم الهوية</h2>
+        <select value={credUser} onChange={(e) => setCredUser(e.target.value)} required>
+          <option value="">اختر المستخدم</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.fullName}</option>
+          ))}
+        </select>
+        <input dir="ltr" inputMode="numeric" pattern="\d{10}" maxLength={10} value={credId} onChange={(e) => setCredId(e.target.value)} placeholder="رقم الهوية (10 أرقام)" required />
+        <button type="submit">توليد</button>
+        {credNotice && <p className="notice" role="status">{credNotice}</p>}
       </form>
 
       {error && <p className="error" role="alert">{error}</p>}

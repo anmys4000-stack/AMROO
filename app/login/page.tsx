@@ -16,7 +16,7 @@ export default function LoginPage() {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier: email, password }),
       });
       if (res.ok) {
         window.location.assign("/");
@@ -37,11 +37,11 @@ export default function LoginPage() {
         <h1>تسجيل الدخول</h1>
         <p className="sub">منصّة مسار · AMROO</p>
 
-        <label htmlFor="email">البريد الإلكتروني</label>
+        <label htmlFor="email">البريد الإلكتروني أو رقم الهوية</label>
         <input
           id="email"
           name="email"
-          type="email"
+          type="text"
           autoComplete="username"
           dir="ltr"
           required

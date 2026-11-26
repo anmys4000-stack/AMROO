@@ -12,20 +12,24 @@ const SESSION_MAX_AGE = 60 * 60 * 8;
 const GENERIC_ERROR = "البريد الإلكتروني أو كلمة المرور غير صحيحة";
 
 export async function POST(request: Request) {
-  let body: { email?: unknown; password?: unknown };
+  let body: { email?: unknown; identifier?: unknown; password?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
   }
 
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  // الدخول بالبريد الإلكتروني أو برقم الهوية المسجّل للحساب.
+  const raw = typeof body.identifier === "string" ? body.identifier : typeof body.email === "string" ? body.email : "";
+  const identifier = raw.trim().toLowerCase();
   const password = typeof body.password === "string" ? body.password : "";
-  if (!email || !password || password.length > 200) {
+  if (!identifier || !password || password.length > 200) {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findFirst({
+    where: { OR: [{ email: identifier }, { nationalId: identifier }] },
+  });
   const ok = user && user.isActive && (await verifyPassword(password, user.passwordHash));
   if (!user || !ok) {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
