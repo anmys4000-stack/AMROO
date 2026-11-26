@@ -1,6 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { VIOLATIONS_GUIDE } from "../../src/lib/violations-guide";
+
+const DEGREE_WORD: { [k: number]: string } = { 1: "الأولى", 2: "الثانية", 3: "الثالثة", 4: "الرابعة", 5: "الخامسة" };
 
 type Student = { id: string; fullName: string };
 type Record = { id: string; category: string; description: string; createdAt: string };
@@ -90,6 +93,26 @@ export default function BehaviorPage() {
               </option>
             ))}
           </select>
+          {category === "مخالفة" && (
+            <>
+              <label htmlFor="guide">بند من دليل المخالفات (يحدد الدرجة والحسم)</label>
+              <select
+                id="guide"
+                defaultValue=""
+                onChange={(e) => {
+                  const v = VIOLATIONS_GUIDE[Number(e.target.value)];
+                  if (v) setDescription(`${v.description} (الدرجة ${DEGREE_WORD[v.degree]} · حسم ${v.points} ${v.points === 1 ? "درجة" : "درجات"})`);
+                }}
+              >
+                <option value="">اختر البند أو اكتب الوصف يدويًا</option>
+                {VIOLATIONS_GUIDE.map((v, i) => (
+                  <option key={i} value={i}>
+                    الدرجة {v.degree} · {v.description}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
           <label htmlFor="desc">الوصف</label>
           <input id="desc" value={description} onChange={(e) => setDescription(e.target.value)} required minLength={3} maxLength={1000} />
           <button type="submit">تسجيل</button>
