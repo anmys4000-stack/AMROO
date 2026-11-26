@@ -1,5 +1,6 @@
 import { prisma } from "../../src/lib/db";
 import { getCurrentUser, hasPermission } from "../../src/lib/auth";
+import PrintButton from "../violation-forms/PrintButton";
 
 // ملف الحالة: الإجراء التصاعدي حسب درجة المخالفة وعدد تكرارها، كما في دليل مسار
 // (دليل الإجراءات التربوية التصاعدية). كل مرحلة تنطبق من رقم التكرار المذكور وما بعده.
@@ -100,6 +101,25 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
       ...(classId ? { classId } : {}),
     },
   };
+  // رقم تكرار كل مخالفة في السجل (لكل طالب ودرجة)، لتحديد الإجراء المتخذ بعد تسجيلها.
+  const degreeKeyOf = (text: string) => Object.keys(ESCALATION).find((k) => text.includes(k));
+  const allLogged = selected
+    ? []
+    : await prisma.behaviorRecord.findMany({
+        where: { schoolId: user.schoolId, category: "مخالفة" },
+        select: { id: true, studentId: true, description: true },
+        orderBy: { createdAt: "asc" },
+      });
+  const rowRep = new Map<string, number>();
+  const counts: Record<string, number> = {};
+  for (const r of allLogged) {
+    const d = degreeKeyOf(r.description);
+    if (!d) continue;
+    const k = `${r.studentId}|${d}`;
+    counts[k] = (counts[k] ?? 0) + 1;
+    rowRep.set(r.id, counts[k]);
+  }
+
   const [classList, logTotal, logRows] = selected
     ? [[], 0, []]
     : await Promise.all([
@@ -130,7 +150,10 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
       `}</style>
       {!selected && (
         <>
-          <h1>سجل المخالفات ({logTotal})</h1>
+          <div className="no-print" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <h1>سجل المخالفات ({logTotal})</h1>
+            <PrintButton />
+          </div>
           <form method="GET" className="card no-print vc-filter">
             <label>
               بحث باسم الطالب
@@ -171,12 +194,15 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
                       <th>نقاط الحسم</th>
                       <th>سجّلها</th>
                       <th>التاريخ</th>
+                      <th>الإجراء المتخذ</th>
                       <th>ملف الحالة</th>
                     </tr>
                   </thead>
                   <tbody>
                     {logRows.map((r) => {
-                      const key = Object.keys(ESCALATION).find((k) => r.description.includes(k));
+                      const key = degreeKeyOf(r.description);
+                      const rep = rowRep.get(r.id) ?? 1;
+                      const stage = key ? [...ESCALATION[key].stages].reverse().find((st) => rep >= st.from) : undefined;
                       return (
                         <tr key={r.id}>
                           <td>{r.student.fullName}</td>
@@ -186,6 +212,16 @@ export default async function ViolationCasesPage({ searchParams }: { searchParam
                           <td>{key ? ESCALATION[key].points : "-"}</td>
                           <td>{r.recordedBy ?? "-"}</td>
                           <td dir="ltr">{r.createdAt.toISOString().slice(0, 10)}</td>
+                          <td>
+                            {stage ? (
+                              <details>
+                                <summary>{stage.label} (التكرار {rep})</summary>
+                                <ul>{stage.steps.map((x) => <li key={x}>{x}</li>)}</ul>
+                              </details>
+                            ) : (
+                              "-"
+                            )}
+                          </td>
                           <td><a href={`/violation-cases?student=${r.student.id}`}>فتح</a></td>
                         </tr>
                       );
