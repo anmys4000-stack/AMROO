@@ -2,7 +2,15 @@
 
 import { FormEvent, useState } from "react";
 
-type U = { id: string; fullName: string; email: string; role: string; isActive: boolean };
+type U = { id: string; fullName: string; email: string; role: string; roleKey: string; extraRoles: string[]; isActive: boolean };
+
+const EXTRA_ROLE_OPTIONS: [string, string][] = [
+  ["PRINCIPAL", "مدير المدرسة"],
+  ["STUDENT_AFFAIRS", "وكيل شؤون الطلاب"],
+  ["GUIDANCE", "موجه طلابي"],
+  ["ACADEMIC_DEPUTY", "وكيل الشؤون التعليمية"],
+  ["TEACHER", "معلم"],
+];
 
 // اسم المدرسة، وإضافة مستخدم بكلمة مرور مؤقتة، وقائمة المستخدمين.
 type Profile = {
@@ -62,6 +70,26 @@ export default function SettingsPanel({ schoolName, profile, users, classCount }
   const [credUser, setCredUser] = useState("");
   const [credId, setCredId] = useState("");
   const [credNotice, setCredNotice] = useState<string | null>(null);
+
+  const [extraDraft, setExtraDraft] = useState<Record<string, string[]>>({});
+  const [rolesNotice, setRolesNotice] = useState<string | null>(null);
+
+  async function saveExtraRoles(userId: string) {
+    setError(null);
+    setRolesNotice(null);
+    const extraRoles = extraDraft[userId] ?? users.find((u) => u.id === userId)?.extraRoles ?? [];
+    const res = await fetch(`/api/users/${userId}/roles`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ extraRoles }),
+    });
+    const data = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (!res.ok) {
+      setError(data?.error ?? "تعذّر حفظ الأدوار");
+      return;
+    }
+    setRolesNotice("تم حفظ الأدوار الإضافية. يسري التغيير عند الدخول التالي.");
+  }
 
   async function generateCredentials(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -164,6 +192,35 @@ export default function SettingsPanel({ schoolName, profile, users, classCount }
         <button type="submit">إنشاء الحساب</button>
         {created && <p className="notice" role="status" dir="ltr">{created}</p>}
       </form>
+
+      <section className="card">
+        <h2>الأدوار الإضافية</h2>
+        <p>يحصل المستخدم على صلاحيات دوره الرئيسي وكل دور إضافي يُمنح له.</p>
+        {users.filter((u) => u.isActive).map((u) => {
+          const current = extraDraft[u.id] ?? u.extraRoles;
+          return (
+            <div key={u.id} className="row" style={{ flexWrap: "wrap", gap: 8 }}>
+              <strong>{u.fullName}</strong>
+              <span>{u.role}</span>
+              {EXTRA_ROLE_OPTIONS.filter(([key]) => key !== u.roleKey).map(([key, label]) => (
+                <label key={key} style={{ marginInlineEnd: 8 }}>
+                  <input
+                    type="checkbox"
+                    checked={current.includes(key)}
+                    onChange={(e) => {
+                      const next = e.target.checked ? [...current, key] : current.filter((x) => x !== key);
+                      setExtraDraft({ ...extraDraft, [u.id]: next });
+                    }}
+                  />{" "}
+                  {label}
+                </label>
+              ))}
+              <button type="button" onClick={() => saveExtraRoles(u.id)}>حفظ</button>
+            </div>
+          );
+        })}
+        {rolesNotice && <p className="notice" role="status">{rolesNotice}</p>}
+      </section>
 
       <form className="card" onSubmit={generateCredentials}>
         <h2>توليد بيانات الدخول من رقم الهوية</h2>

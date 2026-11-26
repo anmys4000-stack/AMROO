@@ -55,6 +55,7 @@ model User {
   fullName           String
   passwordHash       String
   role               Role
+  extraRoles         Role[]                @default([])
   isActive           Boolean               @default(true)
   mustChangePassword Boolean               @default(false)
   phone              String?

@@ -36,7 +36,7 @@ export default async function SettingsPage() {
     }),
     prisma.user.findMany({
       where: { schoolId: user.schoolId },
-      select: { id: true, fullName: true, email: true, role: true, isActive: true },
+      select: { id: true, fullName: true, email: true, role: true, extraRoles: true, isActive: true },
       orderBy: { fullName: "asc" },
     }),
     prisma.schoolClass.findMany({
@@ -67,6 +67,8 @@ export default async function SettingsPage() {
           fullName: u.fullName,
           email: u.email,
           role: ROLE_LABELS[u.role] ?? u.role,
+          roleKey: u.role,
+          extraRoles: u.extraRoles as string[],
           isActive: u.isActive,
         }))}
         classCount={classes.length}

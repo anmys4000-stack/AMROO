@@ -53,7 +53,7 @@ export default async function TeachersPage() {
             <li key={t.id} className="card row">
               <span>{t.fullName}</span>
               <span>{t.specialty ?? ""}</span>
-              {user.role === "PRINCIPAL" && (
+              {user.roles.includes("PRINCIPAL") && (
                 <>
                   <EditButton userId={t.id} fullName={t.fullName} specialty={t.specialty ?? ""} />
                   <ResetButton userId={t.id} />
