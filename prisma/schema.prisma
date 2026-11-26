@@ -21,9 +21,18 @@ enum Role {
 }
 
 model School {
-  id        String        @id @default(cuid())
-  name      String
-  createdAt DateTime      @default(now())
+  id                String        @id @default(cuid())
+  name              String
+  ministryNumber    String?
+  region            String?
+  city              String?
+  stages            String[]      @default([])
+  schoolType        String?       // بنين | بنات
+  planType          String?       // عام | تحفيظ
+  academicYear      String?
+  currentTerm       String?
+  compensationPoints Int          @default(80)
+  createdAt         DateTime      @default(now())
   users     User[]
   classes   SchoolClass[]
   students  Student[]

@@ -5,8 +5,15 @@ import { FormEvent, useState } from "react";
 type U = { id: string; fullName: string; email: string; role: string; isActive: boolean };
 
 // اسم المدرسة، وإضافة مستخدم بكلمة مرور مؤقتة، وقائمة المستخدمين.
-export default function SettingsPanel({ schoolName, users, classCount }: { schoolName: string; users: U[]; classCount: number }) {
+type Profile = {
+  ministryNumber: string; region: string; city: string; stages: string[]; schoolType: string;
+  planType: string; academicYear: string; currentTerm: string; compensationPoints: number;
+};
+
+export default function SettingsPanel({ schoolName, profile, users, classCount }: { schoolName: string; profile: Profile; users: U[]; classCount: number }) {
   const [name, setName] = useState(schoolName);
+  const [p, setP] = useState<Profile>(profile);
+  const [profileNotice, setProfileNotice] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("TEACHER");
@@ -29,6 +36,27 @@ export default function SettingsPanel({ schoolName, users, classCount }: { schoo
       return;
     }
     setNotice("تم حفظ اسم المدرسة");
+  }
+
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setProfileNotice(null);
+    const res = await fetch("/api/school", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...p, name }),
+    });
+    const data = (await res.json().catch(() => null)) as { error?: string } | null;
+    if (!res.ok) {
+      setError(data?.error ?? "تعذّر الحفظ");
+      return;
+    }
+    setProfileNotice("تم حفظ بيانات المدرسة والعام الدراسي");
+  }
+
+  function toggleStage(stage: string) {
+    setP({ ...p, stages: p.stages.includes(stage) ? p.stages.filter((x) => x !== stage) : [...p.stages, stage] });
   }
 
   async function addUser(event: FormEvent<HTMLFormElement>) {
@@ -58,6 +86,46 @@ export default function SettingsPanel({ schoolName, users, classCount }: { schoo
         <button type="submit">حفظ</button>
         <p>عدد الفصول: {classCount}</p>
         {notice && <p className="notice" role="status">{notice}</p>}
+      </form>
+
+      <form className="card" onSubmit={saveProfile}>
+        <h2>بيانات المدرسة والعام الدراسي</h2>
+        <label>الرقم الوزاري <input dir="ltr" value={p.ministryNumber} onChange={(e) => setP({ ...p, ministryNumber: e.target.value })} maxLength={20} /></label>
+        <label>المنطقة / الإدارة التعليمية <input value={p.region} onChange={(e) => setP({ ...p, region: e.target.value })} maxLength={120} /></label>
+        <label>المدينة <input value={p.city} onChange={(e) => setP({ ...p, city: e.target.value })} maxLength={120} /></label>
+        <fieldset>
+          <legend>المراحل التعليمية (يمكن اختيار أكثر من مرحلة)</legend>
+          {["ابتدائي", "متوسط", "ثانوي"].map((st) => (
+            <label key={st} style={{ marginInlineEnd: 12 }}>
+              <input type="checkbox" checked={p.stages.includes(st)} onChange={() => toggleStage(st)} /> {st}
+            </label>
+          ))}
+        </fieldset>
+        <label>نوع المدرسة
+          <select value={p.schoolType} onChange={(e) => setP({ ...p, schoolType: e.target.value })}>
+            <option value="بنين">بنين</option>
+            <option value="بنات">بنات</option>
+          </select>
+        </label>
+        <label>نوع الخطة الدراسية
+          <select value={p.planType} onChange={(e) => setP({ ...p, planType: e.target.value })}>
+            <option value="عام">عام (تعليم عام)</option>
+            <option value="تحفيظ">تحفيظ</option>
+          </select>
+        </label>
+        <label>العام الدراسي <input dir="ltr" value={p.academicYear} onChange={(e) => setP({ ...p, academicYear: e.target.value })} maxLength={20} placeholder="1448هـ" /></label>
+        <label>الفصل الدراسي الحالي
+          <select value={p.currentTerm} onChange={(e) => setP({ ...p, currentTerm: e.target.value })}>
+            <option value="الفصل الأول">الفصل الأول</option>
+            <option value="الفصل الثاني">الفصل الثاني</option>
+            <option value="الفصل الثالث">الفصل الثالث</option>
+          </select>
+        </label>
+        <label>درجات التعويض (تُمنح مرة كل فصل)
+          <input type="number" min={0} max={500} value={p.compensationPoints} onChange={(e) => setP({ ...p, compensationPoints: Number(e.target.value) })} />
+        </label>
+        <button type="submit">حفظ الإعدادات</button>
+        {profileNotice && <p className="notice" role="status">{profileNotice}</p>}
       </form>
 
       <form className="card" onSubmit={addUser}>

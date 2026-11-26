@@ -30,7 +30,10 @@ export default async function SettingsPage() {
   }
 
   const [school, users, classes] = await Promise.all([
-    prisma.school.findUnique({ where: { id: user.schoolId }, select: { name: true } }),
+    prisma.school.findUnique({
+      where: { id: user.schoolId },
+      select: { name: true, ministryNumber: true, region: true, city: true, stages: true, schoolType: true, planType: true, academicYear: true, currentTerm: true, compensationPoints: true },
+    }),
     prisma.user.findMany({
       where: { schoolId: user.schoolId },
       select: { id: true, fullName: true, email: true, role: true, isActive: true },
@@ -48,6 +51,17 @@ export default async function SettingsPage() {
       <h1>الإعدادات</h1>
       <SettingsPanel
         schoolName={school?.name ?? ""}
+        profile={{
+          ministryNumber: school?.ministryNumber ?? "",
+          region: school?.region ?? "",
+          city: school?.city ?? "",
+          stages: school?.stages ?? [],
+          schoolType: school?.schoolType ?? "بنين",
+          planType: school?.planType ?? "عام",
+          academicYear: school?.academicYear ?? "",
+          currentTerm: school?.currentTerm ?? "الفصل الأول",
+          compensationPoints: school?.compensationPoints ?? 80,
+        }}
         users={users.map((u) => ({
           id: u.id,
           fullName: u.fullName,
